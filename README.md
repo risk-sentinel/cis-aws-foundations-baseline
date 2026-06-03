@@ -64,6 +64,10 @@ This profile is designed to run unchanged across AWS partitions (Commercial + Go
 | `scan_regions` | `[]` (dynamic discovery) | Set to an explicit array to scope region-iterating checks (2.18 Access Analyzer; 4.8 / 4.9 CloudTrail data events). Default queries `ec2:DescribeRegions` at scan time. Allowlisting trades drift-detection for scan speed / scope discipline — if Access Analyzer or a CloudTrail data-event selector is missing in a region you excluded, 2.18 / 4.8 / 4.9 will not flag it. |
 | `iam_access_model` | `hybrid` | `pure_sso` when human access is only via IAM Identity Center (adds stricter 2.11 / 2.12 checks: no IAM users with console passwords, active keys only for declared service accounts). `legacy_iam` is functionally identical to hybrid in code; the tag exists for coverage-narrative honesty. |
 | `iam_service_account_usernames` | `[]` | Consulted only when `iam_access_model == 'pure_sso'`. Usernames of IAM principals authorised to hold active long-lived access keys (CI/CD, break-glass). CIS 2.12's 90-day-rotation rule still applies to listed usernames. |
+| `c_2_1_3_attestation_uri` | `''` | URI (`s3://`, `https://`, or `file://`) of the periodic-review attestation that the Organizations management account hosts no workloads. Checked via the `document_attestation` resource — the control PASSES when the document exists and is current, FAILS when empty/missing/stale. Empty default fails C-2.1.3 until configured. |
+| `c_2_1_3_attestation_max_age_days` | `365` | Staleness window (days) for the C-2.1.3 attestation. |
+| `c_2_19_attestation_uri` | `''` | URI (`s3://`, `https://`, or `file://`) of the attestation documenting centralized IAM identity (federation / AWS Organizations). Checked via `document_attestation`; empty default fails C-2.19 until configured. |
+| `c_2_19_attestation_max_age_days` | `365` | Staleness window (days) for the C-2.19 attestation. |
 
 ### Partition posture
 

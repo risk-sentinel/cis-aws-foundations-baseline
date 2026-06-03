@@ -70,7 +70,34 @@ control 'C-2.19' do
     applicable
   end
 
-  describe 'IAM federation / centralized identity for multi-account (attestation-required)' do
-    skip 'attestation-required: identity-provider architecture + account-mapping is a governance documentation concern — periodic-review attestation per docs/dev/Attestation_Strategy.md. Authoring template: profiles/cis-aws-foundations/attestations.example.json control_id C-2.19.'
+  # Converted from Skip-with-rationale to Pass-with-evidence via the
+  # document_attestation resource (sparc-validate#115). The identity-provider
+  # architecture + account-mapping remains a governance documentation concern;
+  # what changes is that the EXISTENCE and FRESHNESS of that documentation are
+  # now first-class HDF evidence instead of an unverified Skip. Consumers point
+  # the input at their own evidence store; the SPARC overlay defaults it to the
+  # compliance-artifacts bucket.
+  attestation_uri = input('c_2_19_attestation_uri', value: '')
+  max_age_days    = input('c_2_19_attestation_max_age_days', value: 365)
+
+  if attestation_uri.to_s.empty?
+    describe 'C-2.19 attestation URI (input: c_2_19_attestation_uri)' do
+      it 'must be configured to point at the centralized-identity attestation document' do
+        expect(attestation_uri.to_s).not_to be_empty
+      end
+    end
+  else
+    doc = document_attestation(attestation_uri, max_age_days: max_age_days)
+    describe "C-2.19 centralized-identity attestation (#{attestation_uri})" do
+      it 'is reachable (no connection error)' do
+        expect(doc.connection_error).to be_nil, "attestation unreachable: #{doc.connection_error}"
+      end
+      it 'exists' do
+        expect(doc.exists?).to eq(true)
+      end
+      it "is current within #{max_age_days} days" do
+        expect(doc.current?).to eq(true)
+      end
+    end
   end
 end

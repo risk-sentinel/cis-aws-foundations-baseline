@@ -64,24 +64,37 @@ control 'C-2.1.3' do
     applicable
   end
 
-  # Why this stays attestation (and not dual-mode like 2.1.2/2.1.5/2.1.6):
-  # Determining whether the management account hosts "workloads" requires
-  # enumerating compute (EC2, RDS, Lambda, ECS, EKS, …) IN THE MANAGEMENT
-  # ACCOUNT and classifying each resource as workload vs.
-  # infrastructure-support (the Organizations identity layer itself
-  # implies *some* resources; the question is whether they go beyond
-  # that). Automating this would require:
-  #   (a) AssumeRole into the management account (already plumbed via
-  #       aws_organizations_role_arn — see C-2.1.2 pattern),
-  #   (b) Cross-service enumeration of every compute/storage type, and
-  #   (c) A workload-vs-infra classifier — the semantic that's hard.
-  #
-  # (a) and (b) are mechanical but expensive (large new helper surface).
-  # (c) is genuinely a governance judgement: a CI/CD bastion in the
-  # mgmt account is arguably infra; a developer's test Lambda is a
-  # workload. Periodic-review attestation lets the org owner make that
-  # call without litigating it in code.
-  describe 'Organizations management account not used for workloads (attestation-required)' do
-    skip 'attestation-required: requires (1) AssumeRole into the management account via aws_organizations_role_arn, (2) cross-service compute enumeration in that account, and (3) a workload-vs-infrastructure classification judgement that is genuinely governance-bound. Periodic-review attestation per profiles/cis-aws-foundations/attestations.example.json control_id C-2.1.3.'
+  # Converted from Skip-with-rationale to Pass-with-evidence via the
+  # document_attestation resource (sparc-validate#115). The governance
+  # judgement — is the management account free of workloads — is still made by
+  # a human and recorded in a periodic-review attestation document (the
+  # determination requires AssumeRole into the mgmt account, cross-service
+  # compute enumeration, and a workload-vs-infrastructure classification that
+  # is genuinely governance-bound). What changes: the EXISTENCE and FRESHNESS
+  # of that attestation are now first-class HDF evidence instead of an
+  # unverified Skip. Consumers point the input at their own evidence store; the
+  # SPARC overlay defaults it to the compliance-artifacts bucket.
+  attestation_uri = input('c_2_1_3_attestation_uri', value: '')
+  max_age_days    = input('c_2_1_3_attestation_max_age_days', value: 365)
+
+  if attestation_uri.to_s.empty?
+    describe 'C-2.1.3 attestation URI (input: c_2_1_3_attestation_uri)' do
+      it 'must be configured to point at the periodic-review attestation document' do
+        expect(attestation_uri.to_s).not_to be_empty
+      end
+    end
+  else
+    doc = document_attestation(attestation_uri, max_age_days: max_age_days)
+    describe "C-2.1.3 management-account-workloads attestation (#{attestation_uri})" do
+      it 'is reachable (no connection error)' do
+        expect(doc.connection_error).to be_nil, "attestation unreachable: #{doc.connection_error}"
+      end
+      it 'exists' do
+        expect(doc.exists?).to eq(true)
+      end
+      it "is current within #{max_age_days} days" do
+        expect(doc.current?).to eq(true)
+      end
+    end
   end
 end
