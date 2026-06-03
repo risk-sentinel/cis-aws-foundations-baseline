@@ -72,20 +72,28 @@ control 'C-2.1.3' do
   # compute enumeration, and a workload-vs-infrastructure classification that
   # is genuinely governance-bound). What changes: the EXISTENCE and FRESHNESS
   # of that attestation are now first-class HDF evidence instead of an
-  # unverified Skip. Consumers point the input at their own evidence store; the
-  # SPARC overlay defaults it to the compliance-artifacts bucket.
-  attestation_uri = input('c_2_1_3_attestation_uri', value: '')
-  max_age_days    = input('c_2_1_3_attestation_max_age_days', value: 365)
+  # unverified Skip.
+  #
+  # This is a `boundary`-class document (the boundary's own periodic-review
+  # record). The URI defaults via attestation_uri(:boundary, …), which resolves
+  # against boundary_docs_base and returns '' when that base is unset — so an
+  # unconfigured consumer SKIPs (and can still `saf attest apply` a CMS-pattern
+  # attestation downstream) rather than FAILing on a vacuous "URI must be set"
+  # expectation (sparc-validate#154 §3, §9). A per-control override
+  # (c_2_1_3_attestation_uri) still wins when set.
+  uri          = input('c_2_1_3_attestation_uri', value: attestation_uri(:boundary, 'C-2.1.3'))
+  max_age_days = input('c_2_1_3_attestation_max_age_days', value: 365)
 
-  if attestation_uri.to_s.empty?
-    describe 'C-2.1.3 attestation URI (input: c_2_1_3_attestation_uri)' do
-      it 'must be configured to point at the periodic-review attestation document' do
-        expect(attestation_uri.to_s).not_to be_empty
-      end
+  if uri.to_s.empty?
+    describe 'C-2.1.3 management-account-workloads attestation (no evidence source configured)' do
+      skip 'attestation-required: no boundary evidence source configured; set ' \
+           'boundary_docs_base / c_2_1_3_attestation_uri to the periodic-review ' \
+           'attestation document, or supply a CMS-pattern attestation via ' \
+           '`saf attest apply`.'
     end
   else
-    doc = document_attestation(attestation_uri, max_age_days: max_age_days)
-    describe "C-2.1.3 management-account-workloads attestation (#{attestation_uri})" do
+    doc = document_attestation(uri, max_age_days: max_age_days)
+    describe "C-2.1.3 management-account-workloads attestation (#{uri})" do
       it 'is reachable (no connection error)' do
         expect(doc.connection_error).to be_nil, "attestation unreachable: #{doc.connection_error}"
       end
