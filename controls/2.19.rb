@@ -83,27 +83,37 @@ control 'C-2.19' do
   # attestation downstream) rather than FAILing on a vacuous "URI must be set"
   # expectation (sparc-validate#154 §3, §9). A per-control override
   # (c_2_19_attestation_uri) still wins when set.
-  uri          = input('c_2_19_attestation_uri', value: attestation_uri(:boundary, 'C-2.19'))
-  max_age_days = input('c_2_19_attestation_max_age_days', value: 365)
-
-  if uri.to_s.empty?
-    describe 'C-2.19 centralized-identity attestation (no evidence source configured)' do
-      skip 'attestation-required: no boundary evidence source configured; set ' \
-           'boundary_docs_base / c_2_19_attestation_uri to the centralized-identity ' \
-           'attestation document, or supply a CMS-pattern attestation via ' \
-           '`saf attest apply`.'
+  # VERIFY-don't-trust (Phase C): direct identity federation leaves a checkable
+  # footprint — a SAML or OIDC identity provider registered in the account. When the
+  # consumer's model is direct federation (iam_require_federation: true), assert a
+  # provider exists rather than trusting a doc. IAM Identity Center / Organizations
+  # SSO is org-level (no account-level provider) -> attestation floor (matrix-documented).
+  if input('iam_require_federation', value: false)
+    has_federation = aws_iam_saml_providers.entries.any? || aws_iam_oidc_providers.entries.any?
+    describe 'C-2.19 IAM identity providers (SAML/OIDC federation configured)' do
+      subject { has_federation }
+      it { should eq true }
     end
   else
-    doc = document_attestation(uri, max_age_days: max_age_days)
-    describe "C-2.19 centralized-identity attestation (#{uri})" do
-      it 'is reachable (no connection error)' do
-        expect(doc.connection_error).to be_nil, "attestation unreachable: #{doc.connection_error}"
+    uri          = input('c_2_19_attestation_uri', value: '')
+    uri = attestation_uri(:boundary, 'C-2.19') if uri.to_s.empty?
+    max_age_days = input('c_2_19_attestation_max_age_days', value: 365)
+    if uri.to_s.empty?
+      describe 'C-2.19 centralized-identity attestation (no evidence source configured)' do
+        skip 'attestation-required: set iam_require_federation: true to VERIFY a SAML/OIDC provider directly, or set boundary_docs_base / c_2_19_attestation_uri (IAM Identity Center / Organizations SSO case), or supply a CMS-pattern attestation via `saf attest apply`.'
       end
-      it 'exists' do
-        expect(doc.exists?).to eq(true)
-      end
-      it "is current within #{max_age_days} days" do
-        expect(doc.current?).to eq(true)
+    else
+      doc = document_attestation(uri, max_age_days: max_age_days)
+      describe "C-2.19 centralized-identity attestation (#{uri})" do
+        it 'is reachable (no connection error)' do
+          expect(doc.connection_error).to be_nil, "attestation unreachable: #{doc.connection_error}"
+        end
+        it 'exists' do
+          expect(doc.exists?).to eq(true)
+        end
+        it "is current within #{max_age_days} days" do
+          expect(doc.current?).to eq(true)
+        end
       end
     end
   end
