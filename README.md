@@ -212,3 +212,7 @@ Custom resources live under `libraries/`:
 - `aws_resource_policy_violations.rb` (#72) — account-wide scanner across S3, KMS, Secrets Manager, SQS, SNS, Lambda for CIS 2.21. Per-service walkers swallow AccessDenied / NoSuch... → `partial_failures` (informational, non-failing) so a missing IAM permission on one service doesn't mask findings on the others. Honors `c221_excluded_arns` (exact-ARN exemption) + `scan_regions`.
 
 See the top-level `README.md` for the overall repo state and the sub-issue tracker for per-profile progress.
+
+---
+
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=risk-sentinel_cis-aws-foundations-v7.0.0)](https://sonarcloud.io/summary/new_code?id=risk-sentinel_cis-aws-foundations-v7.0.0)
