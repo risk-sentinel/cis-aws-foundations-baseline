@@ -30,6 +30,15 @@ class AwsVpcPeeringRouteViolations < AwsResourceBase
   attr_reader :violations
 
   def initialize(opts = {})
+    # An EMPTY allowlist is a legitimate state — "no peering is approved yet" —
+    # and it is also the input's default. AwsResourceBase#validate_parameters
+    # rejects an empty parameter VALUE with "Provided parameter should not be
+    # empty", so passing `allowed_cidrs: {}` errored the control on every
+    # account, including ones with no peering connections at all where the
+    # control is documented to pass vacuously. Drop empty values before
+    # validation rather than making every caller branch on it; @allowed_cidrs
+    # below already defaults correctly when the key is absent.
+    opts = opts.reject { |_k, v| v.respond_to?(:empty?) && v.empty? }
     super(opts)
     validate_parameters(allow: [:allowed_cidrs])
     @allowed_cidrs = (opts[:allowed_cidrs] || {}).each_with_object({}) do |(k, v), h|
