@@ -1,218 +1,219 @@
-# AWS Foundations CIS Baseline
+# cis-aws-foundations-baseline
 
-InSpec / CINC Auditor profile validating an AWS account against **CIS Amazon Web Services Foundations Benchmark v7.0.0**.
+InSpec / CINC Auditor profile validating an AWS account against the
+**CIS Amazon Web Services Foundations Benchmark v7.0.0** — 70 controls across
+identity, logging, monitoring, networking and account-level configuration.
 
-## Scope
-
-- **AWS Commercial** (`aws_partition=aws`) — primary target.
-- **AWS GovCloud non-DoD** (`aws_partition=aws-us-gov`) — primary target.
-- Azure and other cloud providers — out of scope.
-
-Per-control partition applicability lives in
-`partition_applicability.yml` and is mirrored on each control via
-`tag applicable_partitions: [...]`. Controls not applicable to the
-running partition skip (impact 0.0) via `only_if`; they do not fail.
-
-## Running Locally
-
-Prerequisites: Docker. Vendor once to pull the `inspec-aws` resource pack:
-
-```bash
-docker pull risksentinel/cinc-auditor@sha256:e483ae61a60ddcb9e6e9d782e79dbdeec87a3fe6271e59e96c332fc1d159d6f1
-
-docker run --rm -v "$PWD:/src" risksentinel/cinc-auditor@sha256:e483ae61a60ddcb9e6e9d782e79dbdeec87a3fe6271e59e96c332fc1d159d6f1 \
-  vendor /src/profiles/cis-aws-foundations --overwrite
-```
-
-Execute against AWS Commercial:
-
-```bash
-docker run --rm \
-  -v "$PWD:/src" \
-  -e AWS_ACCESS_KEY_ID \
-  -e AWS_SECRET_ACCESS_KEY \
-  -e AWS_SESSION_TOKEN \
-  -e AWS_DEFAULT_REGION=us-east-1 \
-  risksentinel/cinc-auditor@sha256:e483ae61a60ddcb9e6e9d782e79dbdeec87a3fe6271e59e96c332fc1d159d6f1 exec /src/profiles/cis-aws-foundations \
-  --input aws_partition=aws \
-  --reporter cli json:/src/hdf.json
-```
-
-For GovCloud, switch the partition input and region:
-
-```bash
-docker run --rm \
-  -v "$PWD:/src" \
-  -e AWS_ACCESS_KEY_ID \
-  -e AWS_SECRET_ACCESS_KEY \
-  -e AWS_DEFAULT_REGION=us-gov-west-1 \
-  risksentinel/cinc-auditor@sha256:e483ae61a60ddcb9e6e9d782e79dbdeec87a3fe6271e59e96c332fc1d159d6f1 exec /src/profiles/cis-aws-foundations \
-  --input aws_partition=aws-us-gov \
-  --reporter cli json:/src/hdf.json
-```
-
-## Portability
-
-This profile is designed to run unchanged across AWS partitions (Commercial + GovCloud non-DoD) and across human access models (hybrid IAM+SSO, pure AWS IAM Identity Center, legacy IAM-heavy). Consumers never fork the profile — they set declared inputs in their own `inputs.yml` or via `--input-file` / `--input`.
-
-### Inputs
-
-| Input | Default | When to override |
-| - | - | - |
-| `aws_partition` | `aws` | Set to `aws-us-gov` when scanning GovCloud non-DoD. Controls the `only_if` partition guard on each control. |
-| `root_mfa_requirement` | `hardware_required` | Set to `virtual_ok` when hardware MFA is impractical across many accounts (CIS 2.6 notes this logistical caveat). Passes 2.6 on MFA-enabled alone, regardless of device type. |
-| `scan_regions` | `[]` (dynamic discovery) | Set to an explicit array to scope region-iterating checks (2.18 Access Analyzer; 4.8 / 4.9 CloudTrail data events). Default queries `ec2:DescribeRegions` at scan time. Allowlisting trades drift-detection for scan speed / scope discipline — if Access Analyzer or a CloudTrail data-event selector is missing in a region you excluded, 2.18 / 4.8 / 4.9 will not flag it. |
-| `iam_access_model` | `hybrid` | `pure_sso` when human access is only via IAM Identity Center (adds stricter 2.11 / 2.12 checks: no IAM users with console passwords, active keys only for declared service accounts). `legacy_iam` is functionally identical to hybrid in code; the tag exists for coverage-narrative honesty. |
-| `iam_service_account_usernames` | `[]` | Consulted only when `iam_access_model == 'pure_sso'`. Usernames of IAM principals authorised to hold active long-lived access keys (CI/CD, break-glass). CIS 2.12's 90-day-rotation rule still applies to listed usernames. |
-| `c_2_1_3_attestation_uri` | `''` | URI (`s3://`, `https://`, or `file://`) of the periodic-review attestation that the Organizations management account hosts no workloads. Checked via the `document_attestation` resource — the control PASSES when the document exists and is current, FAILS when empty/missing/stale. Empty default fails C-2.1.3 until configured. |
-| `c_2_1_3_attestation_max_age_days` | `365` | Staleness window (days) for the C-2.1.3 attestation. |
-| `c_2_19_attestation_uri` | `''` | URI (`s3://`, `https://`, or `file://`) of the attestation documenting centralized IAM identity (federation / AWS Organizations). Checked via `document_attestation`; empty default fails C-2.19 until configured. |
-| `c_2_19_attestation_max_age_days` | `365` | Staleness window (days) for the C-2.19 attestation. |
-
-### Partition posture
-
-GovCloud applicability claims in HDF / OSCAL output rest on **AWS documentation**, not on live scan evidence — this profile is developed and validated against AWS Commercial. The profile's `partition_applicability.yml` marks controls `applicable / applicable` only where AWS publishes identical SDK + service availability for both partitions. Partition-specific handling in code:
-
-- CloudTrail event-selector S3-ARN matcher accepts both `arn:aws:s3` and `arn:aws-us-gov:s3`.
-- Per-region resources pull the region list from `describe_regions`, so GovCloud runs naturally narrow to `us-gov-west-1` / `us-gov-east-1`.
-
-### Access-model posture
-
-The `iam_access_model` input only *adds* stricter describes in `pure_sso` mode. It never relaxes a CIS baseline rule — 2.11 and 2.12 enforce the same stale-credential and key-rotation thresholds in all three modes. The input's job is to close the defensive gap that appears in pure-SSO accounts, where IAM-user-focused checks pass trivially because IAM users are rare to absent; the stricter describes flag any regression toward IAM-user-based human access.
-
-Identity Center–specific controls (stale permission-set assignments, over-privileged permission sets, session durations) are **not** in CIS AWS Foundations v7.0 and are not enforced by this profile. Those would need custom resources against `sso-admin` / `identitystore` — future work, outside this profile's scope.
-
-### Example: pure-SSO consumer `inputs.yml`
-
-```yaml
-aws_partition: aws
-iam_access_model: pure_sso
-iam_service_account_usernames:
-  - cicd-deployer
-  - terraform-runner
-scan_regions:
-  - us-east-1
-  - us-west-2
-```
-
-### Example: hybrid IAM+SSO consumer (default)
-
-`inputs.yml` needs only `aws_partition: aws`. Every other input inherits the declared default.
-
-## Logging strategy (#42)
-
-§4 (CloudTrail / Config / VPC flow / S3 access logging — 10 controls) and §5 (CloudWatch metric filters + Security Hub — 16 controls) assert per-account artefacts that may legitimately live in a central logging account. The `logging_strategy` input expresses that boundary cleanly.
-
-Two values:
-
-- **`logging_strategy: aws_default`** (recommended for consumers with consolidated CloudTrail / centralised SIEM / Organizations-level audit trails). Every §4 + §5 control skips with a `boundary-inheritance` rationale citing `logging_attestation_reference`. The eight failures that previously lit up nightly runs (`cis-aws-foundations 5.1` / `5.10`–`5.16`) become attestation-skips with a doc reference.
-- **`logging_strategy: custom`** (default — preserves pre-#42 behaviour). Every §4 + §5 check runs as before, unless `logging_requirements.required_metric_filters` is non-empty:
-  - Listed CIS rule IDs run their checks.
-  - Unlisted rule IDs skip with the boundary-inheritance rationale.
-
-**Per-rule overrides** via `logging_requirements.metric_filter_overrides` (consulted under `custom` mode only):
-
-```yaml
-logging_requirements:
-  log_group_arn_prefix: "arn:aws:logs:us-east-1:123456789012:log-group:CloudTrail"
-  retention_days: 365
-  required_metric_filters: ["5.1", "5.7", "5.16"]
-  metric_filter_overrides:
-    "5.7":
-      log_group_arn_prefix: "arn:aws:logs:us-east-1:123456789012:log-group:CloudTrail-Console"
-    "5.16":
-      hub_arn: "arn:aws:securityhub:us-east-1:999999999999:hub/default"   # delegated-admin hub
-```
-
-`5.1`–`5.15` recognise `log_group_arn_prefix` per rule (asserts the resolved log group's ARN starts with the prefix). `5.16` recognises `hub_arn` (asserts a specific Security Hub ARN exists — useful when the delegated-admin hub lives in a separate account).
-
-Helper methods exposed by `libraries/_logging_strategy_helpers.rb`:
-
-```ruby
-logging_strategy_inherits?(rid)            # bool — should this control skip?
-logging_strategy_skip_message(rid, default)# string — for the skip body
-logging_strategy_metric_filter_override(rid)# hash — per-rule overrides
-```
-
-## NIST 800-53 Tagging
-
-Every control carries `tag nist: [...]` resolved at scaffold time from
-the XCCDF's DISA CCI identifiers via Heimdall's
-`CciNistMappingData.ts`. Provenance chain:
-
-```ruby
-XCCDF <ident system="http://cyber.mil/cci">CCI-XXXXXX</ident>
-    ↓ (lookup in heimdall2/libs/hdf-converters/src/mappings/CciNistMappingData.ts)
-NIST 800-53 control (e.g. "AC-2 (3)")
-    ↓ (emitted by tools/xccdf_to_inspec/scaffold.py)
-tag nist: ['AC-2 (3)']
-```
-
-The scaffolder **fails loudly** if any rule has a CCI that is not
-present in the map — we never ship controls with CCI-only tags.
-
-## Regenerating From XCCDF
-
-```bash
-python3 tools/xccdf_to_inspec/scaffold.py \
-  --xccdf benchmarks/xccdf/cis_amazon_web_services_foundations_benchmark_v700.xml \
-  --cci-map /path/to/heimdall2/libs/hdf-converters/src/mappings/CciNistMappingData.ts \
-  --output profiles/cis-aws-foundations \
-  --profile-name cis-aws-foundations \
-  --profile-title "AWS Foundations CIS Baseline" \
-  --supports-platform aws
-```
-
-Use `--only <cis-number>` to regenerate a single control.
-
-## Status
-
-All 70 controls scaffolded and filled. Each control carries a `tag implementation_status:` mapped to OSCAL's native vocabulary (added in #31) — see the [Control Classification Guide](../../docs/dev/Control_Classification_Guide.md) for the full 5-bucket taxonomy.
-
-### Coverage distribution
-
-| Type | `implementation_status` | Count |
-| - | - | - |
-| **Automated** | `implemented` | 62 (post cis-aws-foundations completion — #64 — and post C-2.21 cross-resource scan — #72) |
-| **Attestation** | `alternative` | 8 (4 from #21 §2.1 + 4 from completion: §2.1.3 / §2.1.4 / §2.19 / §3.1.3) |
-| **Pending** | `planned` | 0 |
-
-Subset still marked as attestation:
-
-- **`alternative` (attestation-bound)** — 8 controls:
-  - **2.1.1, 2.1.2, 2.1.5, 2.1.6** (#21) — Organizations-management-account state not observable from a member-account scanner. `tag attestation_category: 'policy'`, annual cadence.
-  - **2.1.3, 2.1.4, 2.19** (#64) — workload-inventory / OU-taxonomy / IdP-architecture governance reviews. `tag attestation_category: 'policy'`, annual cadence.
-  - **3.1.3** (#64) — Macie classification + finding-triage cadence. `tag attestation_category: 'operational'`, quarterly cadence (engineering / SecOps owned).
-- **`planned`** — none. C-2.21 was the last `planned` control; #72 closes the cross-resource Principal: "*" scan via `aws_resource_policy_violations` (S3 / KMS / Secrets Manager / SQS / SNS / Lambda).
-
-### Attestation-bound controls
-
-The 8 attestation-bound controls use the SAF CLI / CMSgov attestation pattern. The profile ships:
-
-- **`attestations.example.json`** — generic SAF-format JSON template; consumers fork this and fill in real reviewer / date / evidence values.
-
-`attestation_category` routes to team queues per `docs/dev/Attestation_Strategy.md` "Categorization for team routing":
-
-- **`policy`** (7 controls — 2.1.1, 2.1.2, 2.1.3, 2.1.4, 2.1.5, 2.1.6, 2.19): Organizations / IdP governance reviewed annually by the Policy / Compliance team.
-- **`operational`** (1 control — 3.1.3): operational hygiene reviewed quarterly by the Engineering / SecOps team.
-
-When SAF CLI integration lands in `validate.yml` (separate follow-up), these controls' HDF outcomes will reflect the actual attestation `status` + frequency-window check rather than the current `skip 'attestation-required'`. See `docs/dev/Attestation_Strategy.md` for the full decision matrix and authoring guide.
-
-Custom resources live under `libraries/`:
-
-- `aws_iam_root_user.rb` — local override fixing an upstream NPE when no virtual MFA devices exist; preserves the vendored API (`has_mfa_enabled?`, `has_hardware_mfa_enabled?`, etc.). Extended in #64 with credential-report-driven `last_used_at` / `used_recently?(within_days:)` for CIS 2.7.
-- `aws_iam_access_analyzers.rb` — per-region Access Analyzer enumeration for CIS 2.18.
-- `aws_cloudtrail_event_selectors.rb` — S3 object-level logging predicates for CIS 4.8 / 4.9.
-- `aws_account_contact.rb` — `aws_account_primary_contact` + `aws_account_alternate_contact(contact_type:)` for CIS 2.2 / 2.3.
-- `aws_s3_bucket_versioning.rb` (#64) — exposes Status + MfaDelete from GetBucketVersioning for CIS 3.1.2.
-- `aws_network_acls_admin_ingress.rb` (#64) — first-match-wins NACL scanner for CIS 6.2 (admin-port ingress from 0.0.0.0/0).
-- `aws_vpc_peering_route_violations.rb` (#64) — VPC-peering route-table least-access scanner for CIS 6.6 (per-peering CIDR allowlist).
-- `aws_vpc_endpoint_coverage.rb` (#64) — per-VPC required-service coverage scanner for CIS 6.8.
-- `iam_policy_statement.rb` (#72) — pure-Ruby parser for resource-policy JSON. Walks Statement[]; exposes `effect`, `principal_is_wildcard?` (covers `"*"`, `{"AWS":"*"}`, `{"Service":"*"}`, `{"Federated":"*"}`, `{"CanonicalUser":"*"}`, plus arrays), and `has_condition?` (coarse — any non-empty Condition counts as restrictive). No SDK calls; reusable by future controls that need wildcard-principal heuristics.
-- `aws_resource_policy_violations.rb` (#72) — account-wide scanner across S3, KMS, Secrets Manager, SQS, SNS, Lambda for CIS 2.21. Per-service walkers swallow AccessDenied / NoSuch... → `partial_failures` (informational, non-failing) so a missing IAM permission on one service doesn't mask findings on the others. Honors `c221_excluded_arns` (exact-ARN exemption) + `scan_regions`.
-
-See the top-level `README.md` for the overall repo state and the sub-issue tracker for per-profile progress.
+Targets **AWS Commercial** and **AWS GovCloud (non-DoD)**. Per-control partition
+applicability is in [`partition_applicability.yml`](partition_applicability.yml)
+and encoded as `tag applicable_partitions:`.
 
 ---
 
-[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=risk-sentinel_cis-aws-foundations-v7.0.0)](https://sonarcloud.io/summary/new_code?id=risk-sentinel_cis-aws-foundations-v7.0.0)
+## Quickstart
+
+```bash
+git clone https://github.com/risk-sentinel/cis-aws-foundations-baseline
+cd cis-aws-foundations-baseline
+
+cp inputs/example.yml inputs/mine.yml     # then edit — see Inputs below
+cinc-auditor vendor . --overwrite
+
+cinc-auditor exec . -t aws:// \
+  --input-file inputs/mine.yml \
+  --reporter cli json:results.json
+```
+
+`--input-file` is **not optional** here, and it matters more than in most
+profiles: four inputs describe the *shape* of your estate, and left at defaults
+on an estate arranged differently they do not fail loudly — they assess the
+wrong thing.
+
+### Credentials
+
+Standard AWS credential resolution. Read-only across the account surface:
+
+```
+iam:Get*  iam:List*  iam:GenerateCredentialReport  iam:GetCredentialReport
+cloudtrail:DescribeTrails  cloudtrail:GetTrailStatus  cloudtrail:GetEventSelectors
+config:Describe*  s3:GetBucket*  s3:ListAllMyBuckets  kms:DescribeKey
+ec2:Describe*  logs:DescribeLogGroups  logs:DescribeMetricFilters
+cloudwatch:DescribeAlarms  sns:ListSubscriptionsByTopic
+securityhub:DescribeHub    organizations:ListAccounts   (see note)
+```
+
+`organizations:*` is only needed for the organizational modes. When the scan
+runs from a member account, `aws_organizations_role_arn` is how it reaches them.
+
+### What a first run looks like
+
+Against a real single account, defaults except `aws_partition`:
+
+**65 controls with results, 217 results — roughly 156 passed / 54 failed / 7 skipped.**
+
+If you see far fewer, that is the signal to investigate. A run that assessed
+nothing exits 0 and looks clean.
+
+---
+
+## Inputs
+
+Fully documented in [`inputs/example.yml`](inputs/example.yml). 27 inputs — the
+widest surface in the estate, because CIS Foundations covers an *account* rather
+than a service, and an account's arrangement cannot be guessed.
+
+| Group | Inputs |
+|---|---|
+| **Required** | `aws_partition` |
+| **Account shape** | `cloudtrail_mode`, `aws_config_mode`, `vpc_flow_logs_mode`, `iam_access_model` |
+| **Organization context** | `aws_organizations_role_arn`, `log_archive_account_id`, the three `expected_*_destinations` |
+| **Scoping** | `scan_regions`, `iam_service_account_usernames` |
+| **Policy** | `root_mfa_requirement`, `root_user_recent_use_threshold_days`, `s3_mfa_delete_protection`, `security_hub_required`, `required_vpc_endpoints`, `vpc_peering_allowed_cidrs` |
+| **Exceptions** | `s3_mfa_delete_excluded_buckets`, `c221_excluded_arns` |
+| **Attestation** | the `*_base` URIs, two `*_attestation_uri` overrides, two staleness windows |
+
+**The four account-shape inputs are the ones to get right first.** They describe
+how your estate is arranged — one org trail or a trail per account, Identity
+Center or long-lived IAM users. Wrong values do not error; they quietly assess
+the wrong thing.
+
+**`iam_service_account_usernames` is worth a minute.** Left empty, every IAM user
+is treated as a human, which produces console-password and MFA findings against
+programmatic accounts that cannot have a console password at all.
+
+---
+
+## Controls
+
+70 controls following the CIS v7.0.0 numbering:
+
+| Section | Assesses |
+|---|---|
+| 1 — Identity & Access | root usage and MFA, user MFA, key rotation, password policy, unused credentials |
+| 2 — Storage | S3 public access and encryption, EBS and RDS encryption defaults |
+| 3 — Logging | CloudTrail coverage, integrity validation, KMS encryption, Config, flow logs |
+| 4 — Monitoring | metric filters and alarms for the account-level events CIS enumerates |
+| 5 — Networking | default security group, NACLs, remote-access exposure |
+| 6 — Extended | peering route least-access, VPC endpoints, Security Hub |
+
+---
+
+## Producing evidence
+
+A `--reporter cli` run tells you the answer. It does not produce something an
+assessor can trace back to what was assessed, when, by whom, or from which
+scanner output. For that, use the CI templates — the whole pipeline, in YAML
+with no helper scripts behind it:
+
+**GitHub**
+
+```yaml
+jobs:
+  evidence:
+    uses: risk-sentinel/cis-aws-foundations-baseline/.github/workflows/exec-evidence.yml@main
+    with:
+      target: my-account
+      profile_name: cis-aws-foundations-v7.0.0
+      profile_version: "0.1.0"
+    secrets:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+```
+
+**GitLab**
+
+```yaml
+include:
+  - project: risk-sentinel/cis-aws-foundations-baseline
+    file: /ci/gitlab/exec-evidence.yml
+    inputs:
+      target: my-account
+      profile_name: cis-aws-foundations-v7.0.0
+      profile_version: "0.1.0"
+```
+
+An `include:` brings YAML and nothing else, which is why the logic lives in the
+YAML rather than in a script an including project would never receive. The
+templates are carried in this repository on purpose: clone it or include it and
+you have the entire pipeline, with nothing else to install.
+
+### The order, and why it is that order
+
+```
+create passthrough -> execute -> convert (gate) -> apply -> label (gate)
+                   -> validate (gate) -> display
+```
+
+The audit record is built **before** the scan, because that is when the honest
+start time and the pipeline provenance are known. Only finish time, the artifact
+digest and the outcome counts are added afterwards.
+
+### Two artifacts
+
+| artifact | shape | for |
+|---|---|---|
+| `results.final.json` | HDF v3 `baselines[]` | authoritative evidence — schema-validated, carries the audit record and typed target components, feeds `hdf convert --to oscal-sar` |
+| `results-heimdall.json` | InSpec exec-json `profiles[]` | loading into Heimdall |
+
+The Heimdall artifact is a **copy, not a conversion**. Tested against a live
+Heimdall: every `profiles[]` variant loads, including the output of both
+`--to hdf@1` and `--to hdf@2`; only the `baselines[]` v3 document is refused. So
+the choice is fidelity, and every conversion path drops `resource_params` from
+each result plus `depends` / `status` / `status_message` from the profile.
+Copying what cinc-auditor already wrote loses nothing.
+
+**Do not reach for `hdf convert --to hdf@2`.** The `hdf@N` namespace was
+renumbered between hdf-libs 3.4.1 and 3.5.1 — on 3.4.1 it emits `baselines[]`,
+on 3.5.1 `profiles[]` — so a pipeline pinned to it silently changes artifact
+across an image bump. On 3.5.1, `@1` and `@2` are byte-identical.
+
+### Three gates, each of which has failed silently in this estate
+
+- `hdf convert` without `--no-validate`
+- `hdf label` followed by `hdf label show | grep '^Component:'` — `label set`
+  prints `Labels written` and writes a byte-identical file when the document has
+  no components
+- `hdf validate`
+
+The exec step additionally fails the job on a missing or **zero-result**
+artifact. A run that assessed nothing must not go green.
+
+### The audit record
+
+Written on every run — clean, failed, findings or none. Target, scan window,
+scanner, profile and version, pipeline provenance, actor, converter, a sha256 of
+the pre-conversion artifact, and outcome counts.
+
+Two properties are deliberate: **absent is not empty** (an inapplicable field is
+omitted, an undeterminable one is `null` with a reason), and the record **marks
+which fields are corroborable** against systems the producer does not control.
+An audit chain where every field is self-asserted is a story.
+
+Schema authority: [dev-sec-ops-baseline#33](https://github.com/risk-sentinel/dev-sec-ops-baseline/issues/33).
+
+---
+
+## Consuming this profile
+
+Depend on it rather than forking, so you get fixes:
+
+```yaml
+depends:
+  - name: cis-aws-foundations-v7.0.0
+    git: https://github.com/risk-sentinel/cis-aws-foundations-baseline.git
+    tag: v0.1.6
+```
+
+Then `include_controls 'cis-aws-foundations-v7.0.0'` and supply your own inputs. Input overrides
+reach the depended profile's controls, so your values win without editing
+anything here.
+
+## Contributing
+
+Control logic changes belong here. `cinc-auditor check` only *loads* a profile —
+it will not catch a resource that returns empty because an API call failed.
+Anything touching `libraries/` needs a real `exec` against a real target before
+it is trusted.
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).

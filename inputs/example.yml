@@ -1,0 +1,124 @@
+# =============================================================================
+# cis-aws-foundations-baseline — reference inputs
+#
+#   cp inputs/example.yml inputs/mine.yml   # edit, then:
+#   cinc-auditor exec . -t aws:// --input-file inputs/mine.yml
+#
+# --input-file is NOT optional. cinc-auditor does not auto-load a profile-root
+# inputs file, and several controls change what they assert on an empty input.
+#
+# This profile has the widest input surface in the estate because CIS
+# Foundations covers an account, not a service — and an account's shape
+# (single vs organization, where logs land, which IAM model) cannot be guessed.
+# =============================================================================
+
+# ---- REQUIRED TO RUN --------------------------------------------------------
+
+# Which AWS partition is being scanned.
+#   aws         AWS Commercial
+#   aws-us-gov  AWS GovCloud (non-DoD)
+aws_partition: aws
+
+# ---- ACCOUNT SHAPE — get these right before reading any result --------------
+#
+# These four describe how your estate is arranged. Left at defaults on an estate
+# arranged differently, they do not fail loudly — they assess the wrong thing.
+
+# How CloudTrail is deployed.
+#   organizational  one org trail covers member accounts
+#   local           each account runs its own trail
+cloudtrail_mode: organizational
+
+# How AWS Config is deployed. Same two values, same meaning.
+aws_config_mode: organizational
+
+# How VPC flow logs are deployed. Same two values, same meaning.
+vpc_flow_logs_mode: local
+
+# Your IAM access model, which decides how the identity controls read.
+#   iam_users   long-lived IAM users
+#   sso         Identity Center / federated only
+#   hybrid      both present
+iam_access_model: hybrid
+
+# ---- ORGANIZATION CONTEXT — needed only for organizational modes ------------
+
+# Role ARN the scan can assume to read AWS Organizations. Needed when running
+# from a member account that cannot call organizations:* directly.
+# EMPTY = organization-wide assertions report that they could not be verified,
+# rather than passing.
+aws_organizations_role_arn: ''
+
+# Account id of the central log-archive account.
+# EMPTY = the destination controls below cannot confirm logs land where you
+# think they do.
+log_archive_account_id: ''
+
+# Where trail / config / flow-log delivery is expected to land. Each EMPTY means
+# that destination is not asserted at all — the control reports it rather than
+# passing.
+expected_cloudtrail_destinations: []
+expected_config_destinations: []
+expected_vpc_flow_log_destinations: []
+
+# ---- SCOPING ----------------------------------------------------------------
+
+# Regions to enumerate. EMPTY = every region, discovered dynamically.
+# Narrowing makes the scan faster and blinder.
+scan_regions: []
+
+# IAM usernames that are service accounts rather than humans. They are exempt
+# from the console/MFA controls that only make sense for people.
+# EMPTY = every IAM user is treated as human, which produces findings against
+# programmatic accounts that cannot have a console password.
+iam_service_account_usernames: []
+
+# ---- POLICY THRESHOLDS ------------------------------------------------------
+
+# Root MFA strength required.
+#   hardware_required  a hardware MFA device
+#   any_mfa            any MFA device is acceptable
+root_mfa_requirement: hardware_required
+
+# Days of root-account inactivity beyond which recent use is flagged.
+root_user_recent_use_threshold_days: 90
+
+# Require MFA Delete on versioned buckets.
+s3_mfa_delete_protection: true
+
+# Buckets exempt from the MFA Delete requirement. Each entry is a documented
+# risk acceptance.
+s3_mfa_delete_excluded_buckets: []
+
+# Require Security Hub to be enabled.
+security_hub_required: true
+
+# VPC endpoints that must exist, by service name.
+# EMPTY = the endpoint control has nothing to require and reports that.
+#   required_vpc_endpoints: [s3, secretsmanager, ecr.api, ecr.dkr]
+required_vpc_endpoints: []
+
+# Per-peering allowlist of destination CIDRs for VPC peering routes (C-6.6).
+# EMPTY = no peering is approved, so ANY peering route is a violation. On an
+# account with no peering connections the control passes vacuously.
+#   vpc_peering_allowed_cidrs:
+#     pcx-0123456789abcdef0: ['10.20.0.0/16']
+vpc_peering_allowed_cidrs: {}
+
+# ARNs exempt from C-2.2.1. Each entry is a documented exception.
+c221_excluded_arns: []
+
+# ---- ATTESTATION — evidence for what no API can answer ----------------------
+
+leveraged_evidence_base: ''
+policy_provider_base: ''
+boundary_docs_base: ''
+
+# Direct URI overrides for the two attestation-backed controls.
+# EMPTY = resolved from boundary_docs_base; if that is empty too, they skip.
+c_2_1_3_attestation_uri: ''
+c_2_19_attestation_uri: ''
+
+# Staleness windows, in days.
+c_2_1_3_attestation_max_age_days: 365
+c_2_19_attestation_max_age_days: 365
