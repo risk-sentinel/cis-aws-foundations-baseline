@@ -74,13 +74,7 @@ control 'C-6.1.1' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  # Hoisted so an EMPTY collection is a declared state rather than an absent
-  # one. Previously the loop below simply did not execute on an account with
-  # no EBS volumes, so the control registered no describe blocks and emitted ZERO
-  # results — neither passed nor Not Applicable, just absent. A control that
-  # asserts nothing while reporting not-red is the failure this profile
-  # exists to catch, and it also fails `hdf convert`, whose schema requires
-  # at least one result per requirement.
+  # Empty collection => Not Applicable, never silence. See README, "Empty collections".
   volume_ids = aws_ebs_volumes.volume_ids
   applicable           = applicable_partition && !volume_ids.empty?
 

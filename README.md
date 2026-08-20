@@ -100,6 +100,22 @@ programmatic accounts that cannot have a console password at all.
 
 ---
 
+## Empty collections
+
+Several controls loop over a collection and describe each member. If the account
+holds none of that resource the loop never executes, so without care the control
+registers no `describe` blocks and emits **zero results** — neither passed nor
+Not Applicable, but *absent*. A control that asserts nothing while reporting
+not-red is the failure this profile exists to catch, and it also breaks the
+evidence pipeline: the HDF v3 schema requires at least one result per
+requirement, so `hdf convert` refuses the whole document.
+
+Those controls therefore hoist their collection, fold emptiness into
+`applicable`, and say so in `only_if`. An account without the resource renders as
+**Not Applicable — a statement** — rather than as silence.
+
+---
+
 ## Producing evidence
 
 A `--reporter cli` run tells you the answer. It does not produce something an
