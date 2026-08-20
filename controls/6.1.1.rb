@@ -74,12 +74,20 @@ control 'C-6.1.1' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  applicable           = applicable_partition
+  # Hoisted so an EMPTY collection is a declared state rather than an absent
+  # one. Previously the loop below simply did not execute on an account with
+  # no EBS volumes, so the control registered no describe blocks and emitted ZERO
+  # results — neither passed nor Not Applicable, just absent. A control that
+  # asserts nothing while reporting not-red is the failure this profile
+  # exists to catch, and it also fails `hdf convert`, whose schema requires
+  # at least one result per requirement.
+  volume_ids = aws_ebs_volumes.volume_ids
+  applicable           = applicable_partition && !volume_ids.empty?
 
   impact 0.5
   impact 0.0 unless applicable
 
-  only_if("Control out of scope (partition=#{input('aws_partition')})") do
+  only_if("Control out of scope (partition=#{input('aws_partition')}) or no EBS volumes in this account") do
     applicable
   end
 
@@ -87,7 +95,7 @@ control 'C-6.1.1' do
   # scope (iterating every AWS region) is a follow-up tracked with
   # #13's target metadata once inventory/targets.yml names the consumer's
   # active regions.
-  aws_ebs_volumes.volume_ids.each do |id|
+  volume_ids.each do |id|
     describe aws_ebs_volume(id) do
       it { should be_encrypted }
     end

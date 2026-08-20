@@ -83,17 +83,25 @@ control 'C-2.17' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  applicable           = applicable_partition
+  # Hoisted so an EMPTY collection is a declared state rather than an absent
+  # one. Previously the loop below simply did not execute on an account with
+  # no IAM server certificates, so the control registered no describe blocks and emitted ZERO
+  # results — neither passed nor Not Applicable, just absent. A control that
+  # asserts nothing while reporting not-red is the failure this profile
+  # exists to catch, and it also fails `hdf convert`, whose schema requires
+  # at least one result per requirement.
+  cert_names = aws_iam_server_certificates.server_certificate_names
+  applicable           = applicable_partition && !cert_names.empty?
 
   impact 0.5
   impact 0.0 unless applicable
 
-  only_if("Control out of scope (partition=#{input('aws_partition')})") do
+  only_if("Control out of scope (partition=#{input('aws_partition')}) or no IAM server certificates in this account") do
     applicable
   end
 
   # Any IAM server certificate whose expiration is in the past fails.
-  aws_iam_server_certificates.server_certificate_names.each do |name|
+  cert_names.each do |name|
     describe aws_iam_server_certificate(server_certificate_name: name) do
       its('expiration') { should be > Time.now }
     end
