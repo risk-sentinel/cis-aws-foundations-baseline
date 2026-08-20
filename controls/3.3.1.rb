@@ -90,16 +90,12 @@ control 'C-3.3.1' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  applicable           = applicable_partition
-
   impact 0.5
-  impact 0.0 unless applicable
+  fs_ids = scoped_or_na(aws_efs_file_systems.file_system_ids,
+                           in_scope: applicable_partition,
+                           reason:   "Control out of scope (partition=#{input('aws_partition')}) or no EFS file systems in this account")
 
-  only_if("Control out of scope (partition=#{input('aws_partition')})") do
-    applicable
-  end
-
-  aws_efs_file_systems.file_system_ids.each do |id|
+  fs_ids.each do |id|
     describe aws_efs_file_system(id) do
       it { should be_encrypted }
     end

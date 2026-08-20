@@ -93,14 +93,10 @@ control 'C-6.7' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  applicable           = applicable_partition
-
   impact 0.5
-  impact 0.0 unless applicable
-
-  only_if("Control out of scope (partition=#{input('aws_partition')})") do
-    applicable
-  end
+  instance_ids = scoped_or_na(aws_ec2_instances.instance_ids,
+                                 in_scope: applicable_partition,
+                                 reason:   "Control out of scope (partition=#{input('aws_partition')}) or no EC2 instances in this account")
 
   # Every EC2 instance must require IMDSv2 (http_tokens=required).
   # aws_ec2_instance is built via create_resource_methods, which exposes
@@ -111,7 +107,7 @@ control 'C-6.7' do
   # calls). The earlier array form `its(%w(metadata_options http_tokens))`
   # was interpreted as a single Hash#[] key access and returned
   # NullResponse against the SDK struct — see CI run 25582602482.
-  aws_ec2_instances.instance_ids.each do |id|
+  instance_ids.each do |id|
     describe aws_ec2_instance(id) do
       its('metadata_options.http_tokens') { should eq 'required' }
     end

@@ -1,5 +1,7 @@
 # cis-aws-foundations-baseline
 
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=risk-sentinel_cis-aws-foundations-v7.0.0)](https://sonarcloud.io/summary/new_code?id=risk-sentinel_cis-aws-foundations-v7.0.0)
+
 InSpec / CINC Auditor profile validating an AWS account against the
 **CIS Amazon Web Services Foundations Benchmark v7.0.0** — 70 controls across
 identity, logging, monitoring, networking and account-level configuration.
@@ -95,6 +97,28 @@ programmatic accounts that cannot have a console password at all.
 | 4 — Monitoring | metric filters and alarms for the account-level events CIS enumerates |
 | 5 — Networking | default security group, NACLs, remote-access exposure |
 | 6 — Extended | peering route least-access, VPC endpoints, Security Hub |
+
+---
+
+## Empty collections
+
+Several controls loop over a collection and describe each member. If the account
+holds none of that resource the loop never executes, so without care the control
+registers no `describe` blocks and emits **zero results** — neither passed nor
+Not Applicable, but *absent*. A control that asserts nothing while reporting
+not-red is the failure this profile exists to catch, and it also breaks the
+evidence pipeline: the HDF v3 schema requires at least one result per
+requirement, so `hdf convert` refuses the whole document.
+
+Those controls call `scoped_or_na` from
+[`libraries/_scoped_collection.rb`](libraries/_scoped_collection.rb), which folds
+emptiness into applicability and writes the `only_if` for them. An account
+without the resource renders as **Not Applicable — a statement** — rather than as
+silence.
+
+The helper exists because expressing this inline cost every affected control the
+same eight lines. Said once, each control keeps only what is specific to it:
+which collection, why it might be out of scope, and what to assert.
 
 ---
 

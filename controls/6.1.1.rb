@@ -74,20 +74,16 @@ control 'C-6.1.1' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  applicable           = applicable_partition
-
   impact 0.5
-  impact 0.0 unless applicable
-
-  only_if("Control out of scope (partition=#{input('aws_partition')})") do
-    applicable
-  end
+  volume_ids = scoped_or_na(aws_ebs_volumes.volume_ids,
+                               in_scope: applicable_partition,
+                               reason:   "Control out of scope (partition=#{input('aws_partition')}) or no EBS volumes in this account")
 
   # Check every EBS volume in the scanner's region. Full "all regions"
   # scope (iterating every AWS region) is a follow-up tracked with
   # #13's target metadata once inventory/targets.yml names the consumer's
   # active regions.
-  aws_ebs_volumes.volume_ids.each do |id|
+  volume_ids.each do |id|
     describe aws_ebs_volume(id) do
       it { should be_encrypted }
     end

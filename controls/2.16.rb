@@ -98,16 +98,12 @@ control 'C-2.16' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  applicable           = applicable_partition
-
   impact 0.5
-  impact 0.0 unless applicable
+  instance_ids = scoped_or_na(aws_ec2_instances.instance_ids,
+                                 in_scope: applicable_partition,
+                                 reason:   "Control out of scope (partition=#{input('aws_partition')}) or no EC2 instances in this account")
 
-  only_if("Control out of scope (partition=#{input('aws_partition')})") do
-    applicable
-  end
-
-  aws_ec2_instances.instance_ids.each do |id|
+  instance_ids.each do |id|
     describe aws_ec2_instance(id) do
       its('iam_instance_profile') { should_not be_nil }
     end
