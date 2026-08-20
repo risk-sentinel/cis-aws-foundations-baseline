@@ -90,16 +90,10 @@ control 'C-3.3.1' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  # Empty collection => Not Applicable, never silence. See README, "Empty collections".
-  fs_ids = aws_efs_file_systems.file_system_ids
-  applicable           = applicable_partition && !fs_ids.empty?
-
   impact 0.5
-  impact 0.0 unless applicable
-
-  only_if("Control out of scope (partition=#{input('aws_partition')}) or no EFS file systems in this account") do
-    applicable
-  end
+  fs_ids = scoped_or_na(aws_efs_file_systems.file_system_ids,
+                           in_scope: applicable_partition,
+                           reason:   "Control out of scope (partition=#{input('aws_partition')}) or no EFS file systems in this account")
 
   fs_ids.each do |id|
     describe aws_efs_file_system(id) do

@@ -83,16 +83,10 @@ control 'C-2.17' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  # Empty collection => Not Applicable, never silence. See README, "Empty collections".
-  cert_names = aws_iam_server_certificates.server_certificate_names
-  applicable           = applicable_partition && !cert_names.empty?
-
   impact 0.5
-  impact 0.0 unless applicable
-
-  only_if("Control out of scope (partition=#{input('aws_partition')}) or no IAM server certificates in this account") do
-    applicable
-  end
+  cert_names = scoped_or_na(aws_iam_server_certificates.server_certificate_names,
+                               in_scope: applicable_partition,
+                               reason:   "Control out of scope (partition=#{input('aws_partition')}) or no IAM server certificates in this account")
 
   # Any IAM server certificate whose expiration is in the past fails.
   cert_names.each do |name|

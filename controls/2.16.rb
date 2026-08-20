@@ -98,16 +98,10 @@ control 'C-2.16' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  # Empty collection => Not Applicable, never silence. See README, "Empty collections".
-  instance_ids = aws_ec2_instances.instance_ids
-  applicable           = applicable_partition && !instance_ids.empty?
-
   impact 0.5
-  impact 0.0 unless applicable
-
-  only_if("Control out of scope (partition=#{input('aws_partition')}) or no EC2 instances in this account") do
-    applicable
-  end
+  instance_ids = scoped_or_na(aws_ec2_instances.instance_ids,
+                                 in_scope: applicable_partition,
+                                 reason:   "Control out of scope (partition=#{input('aws_partition')}) or no EC2 instances in this account")
 
   instance_ids.each do |id|
     describe aws_ec2_instance(id) do

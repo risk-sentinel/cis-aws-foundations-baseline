@@ -93,16 +93,10 @@ control 'C-6.7' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  # Empty collection => Not Applicable, never silence. See README, "Empty collections".
-  instance_ids = aws_ec2_instances.instance_ids
-  applicable           = applicable_partition && !instance_ids.empty?
-
   impact 0.5
-  impact 0.0 unless applicable
-
-  only_if("Control out of scope (partition=#{input('aws_partition')}) or no EC2 instances in this account") do
-    applicable
-  end
+  instance_ids = scoped_or_na(aws_ec2_instances.instance_ids,
+                                 in_scope: applicable_partition,
+                                 reason:   "Control out of scope (partition=#{input('aws_partition')}) or no EC2 instances in this account")
 
   # Every EC2 instance must require IMDSv2 (http_tokens=required).
   # aws_ec2_instance is built via create_resource_methods, which exposes

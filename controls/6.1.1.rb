@@ -74,16 +74,10 @@ control 'C-6.1.1' do
   tag implementation_status: 'implemented'
 
   applicable_partition = ['aws', 'aws-us-gov'].include?(input('aws_partition'))
-  # Empty collection => Not Applicable, never silence. See README, "Empty collections".
-  volume_ids = aws_ebs_volumes.volume_ids
-  applicable           = applicable_partition && !volume_ids.empty?
-
   impact 0.5
-  impact 0.0 unless applicable
-
-  only_if("Control out of scope (partition=#{input('aws_partition')}) or no EBS volumes in this account") do
-    applicable
-  end
+  volume_ids = scoped_or_na(aws_ebs_volumes.volume_ids,
+                               in_scope: applicable_partition,
+                               reason:   "Control out of scope (partition=#{input('aws_partition')}) or no EBS volumes in this account")
 
   # Check every EBS volume in the scanner's region. Full "all regions"
   # scope (iterating every AWS region) is a follow-up tracked with

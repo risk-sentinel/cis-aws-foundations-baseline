@@ -110,9 +110,15 @@ not-red is the failure this profile exists to catch, and it also breaks the
 evidence pipeline: the HDF v3 schema requires at least one result per
 requirement, so `hdf convert` refuses the whole document.
 
-Those controls therefore hoist their collection, fold emptiness into
-`applicable`, and say so in `only_if`. An account without the resource renders as
-**Not Applicable — a statement** — rather than as silence.
+Those controls call `scoped_or_na` from
+[`libraries/_scoped_collection.rb`](libraries/_scoped_collection.rb), which folds
+emptiness into applicability and writes the `only_if` for them. An account
+without the resource renders as **Not Applicable — a statement** — rather than as
+silence.
+
+The helper exists because expressing this inline cost every affected control the
+same eight lines. Said once, each control keeps only what is specific to it:
+which collection, why it might be out of scope, and what to assert.
 
 ---
 
