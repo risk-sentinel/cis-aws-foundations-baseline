@@ -1,6 +1,6 @@
 # cis-aws-foundations-baseline
 
-[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=risk-sentinel_cis-aws-foundations-v7.0.0)](https://sonarcloud.io/summary/new_code?id=risk-sentinel_cis-aws-foundations-v7.0.0)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=risk-sentinel_cis-aws-foundations-baseline)](https://sonarcloud.io/summary/new_code?id=risk-sentinel_cis-aws-foundations-baseline)
 
 InSpec / CINC Auditor profile validating an AWS account against the
 **CIS Amazon Web Services Foundations Benchmark v7.0.0** — 70 controls across
