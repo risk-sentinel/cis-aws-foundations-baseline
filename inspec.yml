@@ -180,7 +180,7 @@ inputs:
         - organizations:ListRoots (future)
         - iam:ListOrganizationsFeatures (future)
 
-      Example: arn:aws:iam::111111111111:role/sparc-validate-org-reader
+      Example: arn:aws:iam::111111111111:role/example-org-reader
 
   - name: c221_excluded_arns
     type: array
@@ -239,7 +239,7 @@ inputs:
         - kms_key:       KMS CMK ARN used for at-rest encryption (optional)
         - is_org_trail:  true if this destination is fed by an org-trail
       Example:
-        - bucket: sparc-cloudtrail-archive
+        - bucket: example-cloudtrail-archive
           account_id: '111111111111'
           kms_key:  'arn:aws:kms:us-east-1:111111111111:key/abc-123'
           is_org_trail: true
