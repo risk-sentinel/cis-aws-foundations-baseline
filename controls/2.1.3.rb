@@ -65,7 +65,7 @@ control 'C-2.1.3' do
   end
 
   # Converted from Skip-with-rationale to Pass-with-evidence via the
-  # document_attestation resource (sparc-validate#115). The governance
+  # document_attestation resource. The governance
   # judgement — is the management account free of workloads — is still made by
   # a human and recorded in a periodic-review attestation document (the
   # determination requires AssumeRole into the mgmt account, cross-service
@@ -79,7 +79,7 @@ control 'C-2.1.3' do
   # against boundary_docs_base and returns '' when that base is unset — so an
   # unconfigured consumer SKIPs (and can still `saf attest apply` a CMS-pattern
   # attestation downstream) rather than FAILing on a vacuous "URI must be set"
-  # expectation (sparc-validate#154 §3, §9). A per-control override
+  # expectation. A per-control override
   # (c_2_1_3_attestation_uri) still wins when set.
   uri          = input('c_2_1_3_attestation_uri', value: attestation_uri(:boundary, 'C-2.1.3'))
   max_age_days = input('c_2_1_3_attestation_max_age_days', value: 365)

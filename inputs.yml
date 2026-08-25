@@ -7,9 +7,7 @@
 #
 # All inputs have sensible defaults — see inspec.yml for the catalogue
 # (types, defaults, per-value behaviour) and README.md "Portability"
-# for how each input composes. Real consumer overlays exist at
-# `examples/sparc.inputs.yml` (and any future contributed examples)
-# as a starting template.
+# for how each input composes.
 
 # ----- AWS partition -----
 # 'aws' for Commercial (default), 'aws-us-gov' for GovCloud non-DoD.
@@ -72,7 +70,7 @@ aws_partition: aws
                                           # IS the log archive vs. a member.
 
 # expected_cloudtrail_destinations:
-#   - bucket: sparc-cloudtrail-archive
+#   - bucket: example-cloudtrail-archive
 #     account_id: '111111111111'
 #     kms_key:  'arn:aws:kms:us-east-1:111111111111:key/abc-123'
 #     is_org_trail: true
@@ -80,7 +78,7 @@ aws_partition: aws
 # aws_config_mode: organizational
 
 # expected_config_destinations:
-#   - bucket: sparc-config-archive
+#   - bucket: example-config-archive
 #     account_id: '111111111111'
 #     sns_topic: 'arn:aws:sns:us-east-1:111111111111:config-events'
 #     is_aggregator: true
@@ -107,4 +105,4 @@ aws_partition: aws
 # ListAWSServiceAccessForOrganization). When set, the dual-mode
 # controls auto-validate; when empty (default), they stay attestation
 # with a "requires management context" skip.
-# aws_organizations_role_arn: 'arn:aws:iam::111111111111:role/sparc-validate-org-reader'
+# aws_organizations_role_arn: 'arn:aws:iam::111111111111:role/example-org-reader'
