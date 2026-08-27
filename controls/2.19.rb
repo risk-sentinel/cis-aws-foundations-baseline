@@ -71,7 +71,7 @@ control 'C-2.19' do
   end
 
   # Converted from Skip-with-rationale to Pass-with-evidence via the
-  # document_attestation resource (sparc-validate#115). The identity-provider
+  # document_attestation resource. The identity-provider
   # architecture + account-mapping remains a governance documentation concern;
   # what changes is that the EXISTENCE and FRESHNESS of that documentation are
   # now first-class HDF evidence instead of an unverified Skip.
@@ -81,7 +81,7 @@ control 'C-2.19' do
   # against boundary_docs_base and returns '' when that base is unset — so an
   # unconfigured consumer SKIPs (and can still `saf attest apply` a CMS-pattern
   # attestation downstream) rather than FAILing on a vacuous "URI must be set"
-  # expectation (sparc-validate#154 §3, §9). A per-control override
+  # expectation. A per-control override
   # (c_2_19_attestation_uri) still wins when set.
   # VERIFY-don't-trust (Phase C): direct identity federation leaves a checkable
   # footprint — a SAML or OIDC identity provider registered in the account. When the
