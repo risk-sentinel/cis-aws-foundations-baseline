@@ -11,7 +11,7 @@
 # and retains SDK-call caching.
 #
 # The `aws-sdk-account` gem is not part of inspec-aws's default vendored
-# set. Defensive require (per `aws_workdocs_inventory` pattern in PR #97)
+# set. Defensive require, following the `aws_workdocs_inventory` pattern,
 # so controls degrade to a clear connection_error skip if the gem is
 # missing from the cinc-auditor image instead of raising
 # `uninitialized constant Aws::Account` at exec time.
