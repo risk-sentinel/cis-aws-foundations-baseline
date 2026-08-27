@@ -80,9 +80,9 @@ control 'C-6.1.1' do
                                reason:   "Control out of scope (partition=#{input('aws_partition')}) or no EBS volumes in this account")
 
   # Check every EBS volume in the scanner's region. Full "all regions"
-  # scope (iterating every AWS region) is a follow-up tracked with
-  # #13's target metadata once inventory/targets.yml names the consumer's
-  # active regions.
+  # scope (iterating every AWS region) is a follow-up, dependent on target
+  # metadata once inventory/targets.yml names the consumer's active
+  # regions.
   volume_ids.each do |id|
     describe aws_ebs_volume(id) do
       it { should be_encrypted }
