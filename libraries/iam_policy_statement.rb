@@ -9,7 +9,7 @@
 # Keeping it free of @aws makes it trivial to unit-test and easy to
 # extend with sharper Condition heuristics later.
 #
-# Coarse condition heuristic (per #72 acceptance criteria): a statement
+# Coarse condition heuristic: a statement
 # with a wildcard principal AND any non-empty Condition block is
 # accepted. We do not (yet) judge whether the supplied Condition keys
 # actually narrow access — that is intentionally tracked as a follow-up

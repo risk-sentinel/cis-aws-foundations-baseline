@@ -2,7 +2,7 @@
 # unrestricted access via Principal: "*" without a restrictive
 # Condition. Implements CIS AWS Foundations 2.21.
 #
-# Service surface (per #72): S3, KMS, Secrets Manager, SQS, SNS, Lambda.
+# Service surface: S3, KMS, Secrets Manager, SQS, SNS, Lambda.
 # All but S3 are regional; S3 list_buckets is global but get_bucket_policy
 # is regional (boto3/SDK handles redirects automatically when the bucket's
 # region differs from the client's). Each service walker is independent —
