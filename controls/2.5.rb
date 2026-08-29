@@ -66,6 +66,7 @@ control 'C-2.5' do
     10. Click `Assign Virtual MFA`
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SC-7 a', 'IA-2 (2)']
   tag cci:                   ['CCI-001097', 'CCI-000766']
   tag cis_number:            '2.5'

@@ -70,6 +70,7 @@ control 'C-4.6' do
       aws kms enable-key-rotation --key-id ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SC-28', 'AC-8 a']
   tag cci:                   ['CCI-001199', 'CCI-000051']
   tag cis_number:            '4.6'

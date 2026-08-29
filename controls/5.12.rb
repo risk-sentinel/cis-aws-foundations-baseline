@@ -127,6 +127,7 @@ control 'C-5.12' do
         aws cloudwatch put-metric-alarm --alarm-name NetworkGatewayChangesAlarm --metric-name GatewayChanges --namespace AWS/EC2 --statistic Sum --period 300 --threshold 1 --comparison-operator GreaterThanOrEqualToThreshold --evaluation-periods 1 --alarm-actions ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 f', 'IA-2 (2)', 'AU-3 a', 'AU-3 d']
   tag cci:                   ['CCI-000011', 'CCI-000766', 'CCI-000130', 'CCI-000133']
   tag cis_number:            '5.12'

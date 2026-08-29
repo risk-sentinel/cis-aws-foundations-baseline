@@ -70,6 +70,7 @@ control 'C-2.17' do
     2. A successful command returns no output
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SI-12', 'AU-7 a']
   tag cci:                   ['CCI-001315', 'CCI-001875']
   tag cis_number:            '2.17'

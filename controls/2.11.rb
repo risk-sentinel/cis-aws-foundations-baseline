@@ -76,6 +76,7 @@ control 'C-2.11' do
     aws iam delete-login-profile --user-name ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 f', 'SA-8']
   tag cci:                   ['CCI-000011', 'CCI-000664']
   tag cis_number:            '2.11'

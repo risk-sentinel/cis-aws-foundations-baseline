@@ -72,6 +72,7 @@ control 'C-2.15' do
     aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AWSSupportAccess --role-name ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-8 a', 'IR-7']
   tag cci:                   ['CCI-000051', 'CCI-000839']
   tag cis_number:            '2.15'

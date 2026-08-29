@@ -44,6 +44,7 @@ control 'C-2.1.6' do
     5. Update operational runbooks so that routine CloudTrail administration is performed from the delegated admin account, not the management account.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 c']
   tag cci:                   ['CCI-002113']
   tag cis_number:            '2.1.6'

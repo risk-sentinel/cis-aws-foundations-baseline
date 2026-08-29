@@ -134,6 +134,7 @@ control 'C-4.7' do
     9. Change the region by updating --region, and repeat the remediation procedure for each region.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 f', 'AU-2 a', 'AC-2 a', 'SI-4 a 1']
   tag cci:                   ['CCI-000011', 'CCI-000123', 'CCI-002110', 'CCI-001253']
   tag cis_number:            '4.7'

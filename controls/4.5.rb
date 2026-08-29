@@ -58,6 +58,7 @@ control 'C-4.5' do
     aws kms put-key-policy --key-id --policy ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SC-28', 'AU-1 a 1 (a)', 'AC-8 a']
   tag cci:                   ['CCI-001199', 'CCI-000117', 'CCI-000051']
   tag cis_number:            '4.5'

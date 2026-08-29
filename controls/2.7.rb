@@ -63,6 +63,7 @@ control 'C-2.7' do
     This removes the password associated with the root account and prevents console authentication using the root user.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-11 b', 'AC-2 c']
   tag cci:                   ['CCI-000056', 'CCI-002113']
   tag cis_number:            '2.7'

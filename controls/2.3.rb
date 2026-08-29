@@ -53,6 +53,7 @@ control 'C-2.3' do
     Note: Consider specifying an internal email distribution list to ensure emails are regularly monitored by more than one individual.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['IR-6 a', 'CP-8']
   tag cci:                   ['CCI-000834', 'CCI-000522']
   tag cis_number:            '2.3'

@@ -98,6 +98,7 @@ control 'C-3.2.3' do
     7. Change the AWS region by using the --region filter to repeat the process for other regions.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-3', 'AC-8 a']
   tag cci:                   ['CCI-000213', 'CCI-000051']
   tag cis_number:            '3.2.3'

@@ -65,6 +65,7 @@ control 'C-2.18' do
     2. Repeat for each region as required
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-3', 'AC-8 a']
   tag cci:                   ['CCI-000213', 'CCI-000051']
   tag cis_number:            '2.18'

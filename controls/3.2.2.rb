@@ -65,6 +65,7 @@ control 'C-3.2.2' do
     6. The command output should return the feature's current status set to `true`, indicating that the feature is `enabled`, and that the minor engine upgrades will be applied to the selected RDS instance.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['MP-6 a', 'SI-2 a']
   tag cci:                   ['CCI-001028', 'CCI-001225']
   tag cis_number:            '3.2.2'

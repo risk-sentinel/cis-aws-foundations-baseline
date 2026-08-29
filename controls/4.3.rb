@@ -105,6 +105,7 @@ control 'C-4.3' do
     aws configservice start-configuration-recorder --configuration-recorder-name ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['CM-8 a 1']
   tag cci:                   ['CCI-000389']
   tag cis_number:            '4.3'

@@ -47,6 +47,7 @@ control 'C-2.1.4' do
     6. Update architecture docs, onboarding runbooks, and account request processes to require new accounts to be created in the correct OU based on environment and sensitivity.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['CM-6 b']
   tag cci:                   ['CCI-000366']
   tag cis_number:            '2.1.4'

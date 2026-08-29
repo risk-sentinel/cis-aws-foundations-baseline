@@ -144,6 +144,7 @@ control 'C-2.21' do
     ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-3', 'AC-2 c']
   tag cci:                   ['CCI-000213', 'CCI-002113']
   tag cis_number:            '2.21'

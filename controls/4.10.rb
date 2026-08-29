@@ -46,6 +46,7 @@ control 'C-4.10' do
     4. Confirm if you see the access log destination in the logging tab
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AU-2 a', 'AU-3 a']
   tag cci:                   ['CCI-000123', 'CCI-000130']
   tag cis_number:            '4.10'

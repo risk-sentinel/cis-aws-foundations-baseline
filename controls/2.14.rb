@@ -90,6 +90,7 @@ control 'C-2.14' do
     aws iam detach-role-policy --role-name --policy-arn ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['CM-6 a', 'AC-2 c']
   tag cci:                   ['CCI-000364', 'CCI-002113']
   tag cis_number:            '2.14'

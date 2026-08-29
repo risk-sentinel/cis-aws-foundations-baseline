@@ -46,6 +46,7 @@ control 'C-2.1.1' do
     - Choose Enable to save the configuration.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 c', 'AC-2 f', 'AC-2 (2)']
   tag cci:                   ['CCI-002113', 'CCI-000011', 'CCI-001682']
   tag cis_number:            '2.1.1'

@@ -85,6 +85,7 @@ control 'C-2.16' do
     4. Repeat steps 2 and 3 for each EC2 instance in your AWS account that requires an IAM role to be attached.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 c', 'AC-8 a']
   tag cci:                   ['CCI-002113', 'CCI-000051']
   tag cis_number:            '2.16'

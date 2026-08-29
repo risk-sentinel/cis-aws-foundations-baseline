@@ -65,6 +65,7 @@ control 'C-6.3' do
     aws ec2 authorize-security-group-ingress --group-id --protocol --port --cidr ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SC-7 a', 'SC-18 (4)']
   tag cci:                   ['CCI-001097', 'CCI-002460']
   tag cis_number:            '6.3'

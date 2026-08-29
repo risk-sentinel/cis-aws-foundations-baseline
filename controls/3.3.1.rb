@@ -77,6 +77,7 @@ control 'C-3.3.1' do
     11. Change the AWS region by updating the --region and repeat the entire process for the other AWS regions.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SC-28', 'AC-8 a']
   tag cci:                   ['CCI-001199', 'CCI-000051']
   tag cis_number:            '3.3.1'

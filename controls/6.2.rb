@@ -48,6 +48,7 @@ control 'C-6.2' do
     8. Click `Save`
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SI-4 (11)', 'PM-5']
   tag cci:                   ['CCI-002668', 'CCI-000207']
   tag cis_number:            '6.2'

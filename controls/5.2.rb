@@ -126,6 +126,7 @@ control 'C-5.2' do
         aws cloudwatch put-metric-alarm --alarm-name ` ` --metric-name ` ` --statistic Sum --period 300 --threshold 1 --comparison-operator GreaterThanOrEqualToThreshold --evaluation-periods 1 --namespace 'CISBenchmark' --alarm-actions ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['IA-2 (2)', 'AU-3 a', 'AU-3 d']
   tag cci:                   ['CCI-000766', 'CCI-000130', 'CCI-000133']
   tag cis_number:            '5.2'

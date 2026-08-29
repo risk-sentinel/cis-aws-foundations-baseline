@@ -100,6 +100,7 @@ control 'C-4.1' do
     Note: Creating a CloudTrail trail via the CLI without providing any overriding options configures all `read` and `write` `Management Events` to be logged by default.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 f', 'AU-3 a']
   tag cci:                   ['CCI-000011', 'CCI-000130']
   tag cis_number:            '4.1'

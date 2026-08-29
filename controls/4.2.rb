@@ -57,6 +57,7 @@ control 'C-4.2' do
     aws cloudtrail validate-logs --trail-arn --start-time --end-time ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 i 1', 'AU-3 d']
   tag cci:                   ['CCI-002126', 'CCI-000133']
   tag cis_number:            '4.2'
