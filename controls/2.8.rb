@@ -56,6 +56,7 @@ control 'C-2.8' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['IA-5 (1) (e)', 'SA-3 a']
+  tag ksi:                   ['KSI-IAM-APM', 'KSI-PIY-RIS', 'KSI-PIY-RSD']
   tag nist_r4:               ['IA-5 (1) (e)', 'SA-3 a']
   tag cci:                   ['CCI-000200', 'CCI-000615']
   tag cis_number:            '2.8'

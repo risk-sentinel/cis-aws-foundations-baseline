@@ -63,6 +63,7 @@ control 'C-6.1.1' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['SC-28', 'AC-8 a']
+  tag ksi:                   ['KSI-SVC-SIN']
   tag nist_r4:               ['SC-28']
   tag cci:                   ['CCI-001199', 'CCI-000051']
   tag cis_number:            '6.1.1'

@@ -55,6 +55,7 @@ control 'C-2.3' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['IR-6 a', 'CP-8']
+  tag ksi:                   ['KSI-INR-RIR', 'KSI-RPL-ARP']
   tag nist_r4:               ['CP-8', 'IR-6 a']
   tag cci:                   ['CCI-000834', 'CCI-000522']
   tag cis_number:            '2.3'

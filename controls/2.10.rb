@@ -63,6 +63,7 @@ control 'C-2.10' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['SC-7 a', 'IA-2 (2)']
+  tag ksi:                   ['KSI-CNA-ULN', 'KSI-IAM-APM', 'KSI-SVC-EIS']
   tag nist_r4:               ['IA-2 (2)', 'SC-7 a']
   tag cci:                   ['CCI-001097', 'CCI-000766']
   tag cis_number:            '2.10'

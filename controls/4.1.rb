@@ -102,6 +102,7 @@ control 'C-4.1' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 f', 'AU-3 a']
+  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS', 'KSI-MLA-OSM']
   tag nist_r4:               ['AC-2 f', 'AU-3']
   tag cci:                   ['CCI-000011', 'CCI-000130']
   tag cis_number:            '4.1'

@@ -82,6 +82,7 @@ control 'C-6.7' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['CM-7 a', 'IA-5 (1) (e)']
+  tag ksi:                   ['KSI-CMT-RMV', 'KSI-IAM-APM', 'KSI-IAM-JIT']
   tag nist_r4:               ['CM-7 a', 'IA-5 (1) (e)']
   tag cci:                   ['CCI-000381', 'CCI-000200']
   tag cis_number:            '6.7'

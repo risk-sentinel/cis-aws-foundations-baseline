@@ -67,6 +67,7 @@ control 'C-2.18' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['AC-3', 'AC-8 a']
+  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-ELP', 'KSI-IAM-JIT']
   tag nist_r4:               ['AC-3']
   tag cci:                   ['CCI-000213', 'CCI-000051']
   tag cis_number:            '2.18'
