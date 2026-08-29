@@ -112,6 +112,7 @@ control 'C-5.11' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['IA-2 (2)', 'AU-3 a', 'AU-3 d', 'SC-28']
+  tag nist_r4:               ['AU-3', 'IA-2 (2)', 'SC-28']
   tag cci:                   ['CCI-000766', 'CCI-000130', 'CCI-000133', 'CCI-001199']
   tag cis_number:            '5.11'
   tag cis_rid:               '5.11'

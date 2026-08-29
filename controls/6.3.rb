@@ -67,6 +67,7 @@ control 'C-6.3' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['SC-7 a', 'SC-18 (4)']
+  tag nist_r4:               ['SC-18 (4)', 'SC-7 a']
   tag cci:                   ['CCI-001097', 'CCI-002460']
   tag cis_number:            '6.3'
   tag cis_rid:               '6.3'

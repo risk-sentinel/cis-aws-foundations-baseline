@@ -76,6 +76,7 @@ control 'C-2.20' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 i 1', 'AC-8 a']
+  tag nist_r4:               ['AC-2 i 1']
   tag cci:                   ['CCI-002126', 'CCI-000051']
   tag cis_number:            '2.20'
   tag cis_rid:               '2.20'

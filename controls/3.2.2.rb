@@ -67,6 +67,7 @@ control 'C-3.2.2' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['MP-6 a', 'SI-2 a']
+  tag nist_r4:               ['MP-6 a', 'SI-2 a']
   tag cci:                   ['CCI-001028', 'CCI-001225']
   tag cis_number:            '3.2.2'
   tag cis_rid:               '3.2.2'

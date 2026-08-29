@@ -112,6 +112,7 @@ control 'C-5.6' do
   tag severity:              'medium'
   tag severity_source:       'unassessed'
   tag nist:                  ['CM-6 b', 'IA-2 (2)', 'AU-3 a', 'AU-3 d']
+  tag nist_r4:               ['AU-3', 'CM-6 b', 'IA-2 (2)']
   tag cci:                   ['CCI-000366', 'CCI-000766', 'CCI-000130', 'CCI-000133']
   tag cis_number:            '5.6'
   tag cis_rid:               '5.6'
