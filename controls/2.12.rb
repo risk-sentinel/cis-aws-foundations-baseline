@@ -73,7 +73,10 @@ control 'C-2.12' do
     aws iam delete-access-key --access-key-id --user-name ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 a', 'SA-3 a']
+  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS', 'KSI-PIY-RIS', 'KSI-PIY-RSD']
+  tag nist_r4:               ['AC-2 a', 'SA-3 a']
   tag cci:                   ['CCI-002110', 'CCI-000615']
   tag cis_number:            '2.12'
   tag cis_rid:               '2.12'

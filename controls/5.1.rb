@@ -110,7 +110,10 @@ control 'C-5.1' do
         aws cloudwatch put-metric-alarm --alarm-name  \"unauthorized_api_calls_alarm\"  --metric-name  \"unauthorized_api_calls_metric\"  --statistic Sum --period 300 --threshold 1 --comparison-operator GreaterThanOrEqualToThreshold --evaluation-periods 1 --namespace \"CISBenchmark\" --alarm-actions ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['IA-2 (2)', 'AC-2 (2)', 'AU-3 a', 'AU-3 d']
+  tag ksi:                   ['KSI-IAM-AAM', 'KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-MLA-OSM']
+  tag nist_r4:               ['AC-2 (2)', 'AU-3', 'IA-2 (2)']
   tag cci:                   ['CCI-000766', 'CCI-001682', 'CCI-000130', 'CCI-000133']
   tag cis_number:            '5.1'
   tag cis_rid:               '5.1'

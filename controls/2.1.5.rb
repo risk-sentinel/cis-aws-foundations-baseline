@@ -42,7 +42,10 @@ control 'C-2.1.5' do
     6. Update procedures so that routine Organizations policy tasks are performed from the delegated account, reserving the management account for tasks that only it can perform
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 c']
+  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS']
+  tag nist_r4:               ['AC-2 c']
   tag cci:                   ['CCI-002113']
   tag cis_number:            '2.1.5'
   tag cis_rid:               '2.1.5'

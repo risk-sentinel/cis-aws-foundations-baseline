@@ -66,7 +66,10 @@ control 'C-3.2.4' do
     3. Repeat the procedure for other instances as necessary.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SA-8']
+  tag ksi:                   ['KSI-PIY-RSD']
+  tag nist_r4:               ['SA-8']
   tag cci:                   ['CCI-000664']
   tag cis_number:            '3.2.4'
   tag cis_rid:               '3.2.4'

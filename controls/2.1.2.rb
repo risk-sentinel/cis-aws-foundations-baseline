@@ -79,7 +79,10 @@ control 'C-2.1.2' do
     - AWS recommends testing authorization policies in a staging OU before attaching them broadly to the root to avoid unintended service disruption.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-2 f', 'AC-2 (2)']
+  tag ksi:                   ['KSI-IAM-AAM', 'KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS']
+  tag nist_r4:               ['AC-2 (2)', 'AC-2 f']
   tag cci:                   ['CCI-000011', 'CCI-001682']
   tag cis_number:            '2.1.2'
   tag cis_rid:               '2.1.2'

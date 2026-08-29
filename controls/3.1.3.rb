@@ -83,7 +83,10 @@ control 'C-3.1.3' do
     If you are using a third-party tool to manage and protect your S3 data, follow the vendor documentation for implementing and configuring that tool.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SI-12', 'AC-2 a']
+  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS', 'KSI-RPL-ABO']
+  tag nist_r4:               ['AC-2 a', 'SI-12']
   tag cci:                   ['CCI-001315', 'CCI-002110']
   tag cis_number:            '3.1.3'
   tag cis_rid:               '3.1.3'

@@ -43,7 +43,10 @@ control 'C-6.6' do
     aws ec2 create-route --route-table-id --destination-cidr-block --vpc-peering-connection-id ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SI-4 (11)', 'SI-4 (5)']
+  tag ksi:                   ['KSI-INR-RIR', 'KSI-MLA-LET']
+  tag nist_r4:               ['SI-4 (11)', 'SI-4 (5)']
   tag cci:                   ['CCI-002668', 'CCI-002663']
   tag cis_number:            '6.6'
   tag cis_rid:               '6.6'

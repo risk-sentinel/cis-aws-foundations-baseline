@@ -41,7 +41,10 @@ control 'C-2.1.3' do
     5. Update architecture diagrams, runbooks, and onboarding processes to state that new workloads must be deployed only into designated workload accounts, not the management account.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['CM-6 b']
+  tag ksi:                   ['KSI-CMT-LMC', 'KSI-CMT-RMV', 'KSI-MLA-EVC', 'KSI-SVC-ACM']
+  tag nist_r4:               ['CM-6 b']
   tag cci:                   ['CCI-000366']
   tag cis_number:            '2.1.3'
   tag cis_rid:               '2.1.3'

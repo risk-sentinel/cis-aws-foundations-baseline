@@ -113,7 +113,10 @@ control 'C-6.5' do
     IAM groups allow you to edit the \"name\" field. After remediating default group rules for all VPCs in all regions, edit this field to add text similar to \"DO NOT USE. DO NOT ADD RULES.\"
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-3', 'SC-7 a', 'SC-18 (4)', 'AC-8 a']
+  tag ksi:                   ['KSI-CNA-ULN', 'KSI-IAM-APM', 'KSI-IAM-ELP', 'KSI-IAM-JIT', 'KSI-SVC-EIS']
+  tag nist_r4:               ['AC-3', 'SC-18 (4)', 'SC-7 a']
   tag cci:                   ['CCI-000213', 'CCI-001097', 'CCI-002460', 'CCI-000051']
   tag cis_number:            '6.5'
   tag cis_rid:               '6.5'

@@ -52,7 +52,10 @@ control 'C-2.9' do
     Note: All commands starting with \"aws iam update-account-password-policy\" can be combined into a single command.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SC-7 a', 'IA-5 (1) (e)']
+  tag ksi:                   ['KSI-CNA-ULN', 'KSI-IAM-APM', 'KSI-SVC-EIS']
+  tag nist_r4:               ['IA-5 (1) (e)', 'SC-7 a']
   tag cci:                   ['CCI-001097', 'CCI-000200']
   tag cis_number:            '2.9'
   tag cis_rid:               '2.9'

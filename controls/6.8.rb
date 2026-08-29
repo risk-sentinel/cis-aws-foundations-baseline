@@ -133,7 +133,10 @@ control 'C-6.8' do
     ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['SA-8']
+  tag ksi:                   ['KSI-PIY-RSD']
+  tag nist_r4:               ['SA-8']
   tag cci:                   ['CCI-000664']
   tag cis_number:            '6.8'
   tag cis_rid:               '6.8'

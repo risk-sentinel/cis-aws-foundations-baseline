@@ -48,7 +48,10 @@ control 'C-2.4' do
     Note: While a key can be made inactive, it will still appear in CLI audit output and may result in a false positive. Keys should be deleted to ensure compliance.
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['AC-11 b', 'AC-2 c']
+  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS']
+  tag nist_r4:               ['AC-11 b', 'AC-2 c']
   tag cci:                   ['CCI-000056', 'CCI-002113']
   tag cis_number:            '2.4'
   tag cis_rid:               '2.4'

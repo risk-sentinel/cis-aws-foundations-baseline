@@ -77,7 +77,10 @@ control 'C-5.16' do
     ```
   "
   tag severity:              'medium'
+  tag severity_source:       'unassessed'
   tag nist:                  ['RA-5 a', 'SC-28']
+  tag ksi:                   ['KSI-SCR-MON', 'KSI-SVC-SIN']
+  tag nist_r4:               ['RA-5 a', 'SC-28']
   tag cci:                   ['CCI-001055', 'CCI-001199']
   tag cis_number:            '5.16'
   tag cis_rid:               '5.16'
