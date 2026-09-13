@@ -39,23 +39,34 @@ ENV["AWS_SECRET_ACCESS_KEY"] ||= "stubbed"
 require "yaml"
 require "inspec"
 require "aws-sdk-core"
-require "aws-sdk-ec2"
+require_relative "region_coverage_requires"
+
+MANIFEST = YAML.safe_load_file(File.join(__dir__, "region_coverage_manifest.yml"))
+
+# The vendored inspec-aws supplies AwsResourceBase, and it is only reachable
+# once its directory is on the load path — hence the glob before the require
+# rather than a plain top-of-file require.
+VENDOR = Dir.glob("vendor/*/libraries").find { |d| File.exist?(File.join(d, "aws_backend.rb")) }
+abort "FATAL: no vendored inspec-aws found — run `cinc-auditor vendor . --overwrite` first." if VENDOR.nil?
+$LOAD_PATH.unshift(VENDOR)
+require "aws_backend"
 
 # `Aws.config[:<service>]` raises "invalid configuration option" until that
 # service's SDK gem is loaded — the config key is registered by the gem, not by
-# aws-sdk-core. Each manifest entry therefore declares its service and we
-# require `aws-sdk-<service>` before configuring it. A service whose gem is not
-# baked into the image is reported rather than silently skipped, because a
-# missing gem means that resource is UNCHECKED, which is the condition this
-# whole harness exists to make visible.
-def require_service!(service)
-  require "aws-sdk-#{service}"
-  true
-rescue LoadError
-  false
+# aws-sdk-core. Which services are needed varies per repository, so the requires
+# live in region_coverage_requires.rb next door: literal, top-of-file `require`
+# lines, which keeps this shared file identical across every profile repository
+# and keeps every require at the top of its own file.
+#
+# The two can drift, so they are reconciled rather than trusted. A manifest entry
+# naming a service with no corresponding require is REPORTED, not skipped: an
+# unchecked resource is not a passing resource, and silence here would hide the
+# exact condition this harness exists to surface.
+MISSING_GEMS = MANIFEST.fetch("resources").filter_map do |entry|
+  svc = entry.fetch("watch").fetch("service")
+  loaded = Aws.constants.any? { |c| c.to_s.casecmp?(svc) }
+  loaded ? nil : "#{entry.fetch('resource')} — add `require \"aws-sdk-#{svc}\"` to tests/unit/region_coverage_requires.rb"
 end
-
-MANIFEST = YAML.safe_load_file(File.join(__dir__, "region_coverage_manifest.yml"))
 REGIONS  = MANIFEST.fetch("regions")
 OBSERVED = Hash.new { |h, k| h[k] = [] }
 
@@ -69,45 +80,47 @@ end
 
 def install_stubs!(entries)
   Aws.config[:stub_responses] = true
-  missing = []
   by_service = Hash.new { |h, k| h[k] = {} }
   by_service["ec2"][:describe_regions] = { regions: REGIONS.map { |r| { region_name: r } } }
   entries.each do |e|
     w = e.fetch("watch")
     svc = w.fetch("service")
-    missing << "#{e.fetch('resource')} (aws-sdk-#{svc})" unless require_service!(svc)
     # Some operations have required response members — list_analyzers must carry
     # `analyzers`, for example — so an empty payload raises before the resource
     # is ever exercised. `payload:` in the manifest supplies a minimal valid shape.
     payload = (w["payload"] || {}).transform_keys(&:to_sym)
-    by_service[svc][w.fetch("operation").to_sym] = recorder(e.fetch("resource"), payload)
+    op = w.fetch("operation").to_sym
+    key = "#{svc}/#{op}"
+    by_service[svc][op] = recorder(key, payload)
   end
   by_service.each do |svc, stubs|
     next if svc != "ec2" && !Aws.constants.any? { |c| c.to_s.casecmp?(svc) }
     Aws.config[svc.to_sym] = { stub_responses: stubs }
   end
-  missing
 end
 
 def load_profile_libraries!
-  vendor = Dir.glob("vendor/*/libraries").find { |d| File.exist?(File.join(d, "aws_backend.rb")) }
-  abort "FATAL: no vendored inspec-aws found — run `cinc-auditor vendor . --overwrite` first." if vendor.nil?
-  $LOAD_PATH.unshift(vendor)
-  require "aws_backend"
+  # Underscore-prefixed helper libraries load first in InSpec's alphabetical
+  # order and define the modules resources `include` (e.g. RegionEnumeration).
+  # Evaluating a resource without them raises NameError, which would look like a
+  # broken resource rather than a harness that loaded things out of order.
+  Dir.glob("libraries/_*.rb").sort.each { |f| eval(File.read(f), TOPLEVEL_BINDING, f) } # rubocop:disable Security/Eval
 end
 
-missing_gems = install_stubs!(MANIFEST.fetch("resources"))
+install_stubs!(MANIFEST.fetch("resources"))
 load_profile_libraries!
 
-unless missing_gems.empty?
-  warn "region coverage: #{missing_gems.size} resource(s) UNCHECKED — SDK gem not in the image:"
-  missing_gems.each { |m| warn "  - #{m}" }
+unless MISSING_GEMS.empty?
+  warn "region coverage: #{MISSING_GEMS.size} resource(s) UNCHECKED — SDK gem not in the image:"
+  MISSING_GEMS.each { |m| warn "  - #{m}" }
   warn "An unchecked resource is not a passing resource. Bake the gem or drop the entry deliberately."
   exit 1
 end
 
 failures = []
 reported = []
+unobservable = []
+target_derived = []
 
 MANIFEST.fetch("resources").each do |e|
   name   = e.fetch("resource")
@@ -122,19 +135,64 @@ MANIFEST.fetch("resources").each do |e|
   klass = Object.const_get(e.fetch("klass"))
   args  = (e["args"] || {}).transform_keys(&:to_sym)
 
-  OBSERVED[name].clear
+  w = e.fetch("watch")
+  key = "#{w.fetch('service')}/#{w.fetch('operation')}"
+  OBSERVED[key].clear
   begin
     args.empty? ? klass.new : klass.new(**args)
   rescue StandardError => ex
-    failures << "#{name}: raised #{ex.class}: #{ex.message}"
+    # A raise here is a LEAD, not a finding. This harness instantiates resources
+    # outside InSpec's normal resource machinery, and something that machinery
+    # supplies can be missing — which has already produced one false positive
+    # against code that runs correctly in a real exec. So a resource explicitly
+    # marked `unobservable` (with its reason) reports rather than fails; anything
+    # else still fails loudly, because an unexplained raise must not be silent.
+    if status == "unobservable"
+      reason = e["reason"].to_s
+      if reason.empty?
+        failures << "#{name}: raised #{ex.class} and `unobservable` requires a `reason`"
+      else
+        unobservable << "#{name}: raised #{ex.class} — #{reason}"
+        puts "  UNOBSERVABLE #{name} — raised #{ex.class}; #{reason}"
+      end
+    else
+      failures << "#{name}: raised #{ex.class}: #{ex.message}"
+    end
     next
   end
 
-  seen   = OBSERVED[name].uniq.sort
+  seen   = OBSERVED[key].uniq.sort
   missed = REGIONS.sort - seen
 
   if missed.empty?
     puts "  PASS         #{name} — queried all #{REGIONS.size} regions"
+  elsif status == "target_derived"
+    # A third CORRECT pattern, distinct from both sweeping and being blind: the
+    # region is resolved from the caller's own input — an ARN that names its
+    # region, or the scan target itself (cis-rhel-9-baseline reads it from IMDS
+    # on the host being scanned). Sweeping every region would be WRONG for these:
+    # it would assess resources the caller did not ask about, possibly outside
+    # the boundary. Requires a reason, and is NOT a defect.
+    reason = e["reason"].to_s
+    if reason.empty?
+      failures << "#{name}: status `target_derived` requires a `reason`"
+    else
+      target_derived << "#{name}: #{reason}"
+      puts "  TARGET-REGION #{name} — #{reason}"
+    end
+  elsif status == "unobservable"
+    # Not a pass and not a defect: something about the service makes the walk
+    # invisible to a stubbed client (endpoint discovery is the usual cause —
+    # it fails closed under stub_responses before any operation is reached).
+    # Recorded so nobody "fixes" a resource that is already correct, and so the
+    # gap in coverage is visible rather than implied by absence.
+    reason = e["reason"].to_s
+    if reason.empty?
+      failures << "#{name}: status `unobservable` requires a `reason`"
+    else
+      unobservable << "#{name}: #{reason}"
+      puts "  UNOBSERVABLE #{name} — #{reason}"
+    end
   elsif status == "known_blind"
     reported << "#{name}: queried #{seen.inspect}, never #{missed.inspect}"
     puts "  KNOWN-BLIND  #{name} — queried #{seen.inspect}, never #{missed.inspect}"
@@ -145,6 +203,16 @@ MANIFEST.fetch("resources").each do |e|
 end
 
 puts
+unless target_derived.empty?
+  puts "#{target_derived.size} resource(s) resolve region from the caller's input (correct, not swept):"
+  target_derived.each { |t| puts "  - #{t}" }
+  puts
+end
+unless unobservable.empty?
+  puts "#{unobservable.size} resource(s) NOT observable by this harness (not a defect):"
+  unobservable.each { |u| puts "  - #{u}" }
+  puts
+end
 unless reported.empty?
   puts "#{reported.size} resource(s) still region-blind (tracked, not gating):"
   reported.each { |r| puts "  - #{r}" }
@@ -152,7 +220,7 @@ unless reported.empty?
 end
 
 if failures.empty?
-  puts "region coverage: OK (#{MANIFEST.fetch('resources').size} checked, #{reported.size} known-blind)"
+  puts "region coverage: OK (#{MANIFEST.fetch('resources').size} checked, #{reported.size} known-blind, #{unobservable.size} unobservable, #{target_derived.size} target-derived)"
   exit 0
 end
 
