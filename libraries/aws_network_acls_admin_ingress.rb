@@ -17,6 +17,7 @@
 # Context: docs/dev/Vendored_Resource_Gaps.md.
 
 class AwsNetworkAclsAdminIngress < AwsResourceBase
+  include RegionEnumeration
   name "aws_network_acls_admin_ingress"
   desc "Network ACLs that ALLOW ingress from 0.0.0.0/0 to admin ports."
   example "
@@ -34,10 +35,15 @@ class AwsNetworkAclsAdminIngress < AwsResourceBase
   attr_reader :violations, :admin_ports
 
   def initialize(opts = {})
+    opts = opts.dup
+    # Must be removed BEFORE super — AwsResourceBase forwards unknown keys to
+    # validate_parameters, which raises on anything outside its allow-list.
+    region_override = Array(opts.delete(:regions))
     super(opts)
     validate_parameters(allow: [:admin_ports])
     @admin_ports = Array(opts[:admin_ports] || [22, 3389]).map(&:to_i)
     @violations = []
+    @all_regions = resolve_regions(region_override)
     fetch_data
   end
 
@@ -53,8 +59,8 @@ class AwsNetworkAclsAdminIngress < AwsResourceBase
 
   def fetch_data
     @fetched = false
-    catch_aws_errors do
-      acls = @aws.compute_client.describe_network_acls.network_acls || []
+    each_region_client(::Aws::EC2::Client) do |client, region|
+      acls = client.describe_network_acls.network_acls || []
       @fetched = true
       acls.each do |acl|
         ingress_entries = (acl.entries || []).reject(&:egress)
@@ -68,6 +74,7 @@ class AwsNetworkAclsAdminIngress < AwsResourceBase
           next if first_match.nil?
           next if first_match.rule_action == "deny"
           @violations << {
+            region:         region,
             network_acl_id: acl.network_acl_id,
             vpc_id:         acl.vpc_id,
             port:           port,

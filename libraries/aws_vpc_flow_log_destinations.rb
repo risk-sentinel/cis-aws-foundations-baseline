@@ -20,6 +20,7 @@
 # accessor pattern.
 
 class AwsVpcFlowLogDestinations < AwsResourceBase
+  include RegionEnumeration
   name "aws_vpc_flow_log_destinations"
   desc "VPC Flow Log enumeration with destination_type / destination / traffic_type."
   example "
@@ -41,8 +42,13 @@ class AwsVpcFlowLogDestinations < AwsResourceBase
     .install_filter_methods_on_resource(self, :table)
 
   def initialize(opts = {})
+    opts = opts.dup
+    # Must be removed BEFORE super — AwsResourceBase forwards unknown keys to
+    # validate_parameters, which raises on anything outside its allow-list.
+    region_override = Array(opts.delete(:regions))
     super(opts)
     validate_parameters
+    @all_regions = resolve_regions(region_override)
     @table = fetch_data
   end
 
@@ -58,14 +64,15 @@ class AwsVpcFlowLogDestinations < AwsResourceBase
 
   def fetch_data
     rows = []
-    catch_aws_errors do
+    each_region_client(::Aws::EC2::Client) do |client, region|
       next_token = nil
       loop do
         args = { max_results: 1000 }
         args[:next_token] = next_token if next_token
-        resp = @aws.compute_client.describe_flow_logs(args)
+        resp = client.describe_flow_logs(args)
         Array(resp.flow_logs).each do |fl|
           rows << {
+            region:               region,
             flow_log_id:          fl.flow_log_id,
             resource_id:          fl.resource_id,
             log_destination_type: fl.log_destination_type,

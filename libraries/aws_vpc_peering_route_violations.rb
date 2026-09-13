@@ -19,6 +19,7 @@
 # Context: docs/dev/Vendored_Resource_Gaps.md.
 
 class AwsVpcPeeringRouteViolations < AwsResourceBase
+  include RegionEnumeration
   name "aws_vpc_peering_route_violations"
   desc "VPC-peering route-table CIDR allowlist enforcement (CIS 6.6)."
   example "
@@ -39,8 +40,13 @@ class AwsVpcPeeringRouteViolations < AwsResourceBase
     # validation rather than making every caller branch on it; @allowed_cidrs
     # below already defaults correctly when the key is absent.
     opts = opts.reject { |_k, v| v.respond_to?(:empty?) && v.empty? }
+    opts = opts.dup
+    # Must be removed BEFORE super — AwsResourceBase forwards unknown keys to
+    # validate_parameters, which raises on anything outside its allow-list.
+    region_override = Array(opts.delete(:regions))
     super(opts)
     validate_parameters(allow: [:allowed_cidrs])
+    @all_regions = resolve_regions(region_override)
     @allowed_cidrs = (opts[:allowed_cidrs] || {}).each_with_object({}) do |(k, v), h|
       h[k.to_s] = Array(v).map(&:to_s)
     end
@@ -60,8 +66,8 @@ class AwsVpcPeeringRouteViolations < AwsResourceBase
 
   def fetch_data
     @fetched = false
-    catch_aws_errors do
-      route_tables = @aws.compute_client.describe_route_tables.route_tables || []
+    each_region_client(::Aws::EC2::Client) do |client, region|
+      route_tables = client.describe_route_tables.route_tables || []
       @fetched = true
       route_tables.each do |rt|
         (rt.routes || []).each do |route|
@@ -73,6 +79,7 @@ class AwsVpcPeeringRouteViolations < AwsResourceBase
 
           if allow.nil?
             @violations << {
+              region:         region,
               kind:           :unmanaged_peering,
               peering_id:     peering_id,
               route_table_id: rt.route_table_id,

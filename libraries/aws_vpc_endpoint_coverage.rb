@@ -17,6 +17,7 @@
 # Context: docs/dev/Vendored_Resource_Gaps.md.
 
 class AwsVpcEndpointCoverage < AwsResourceBase
+  include RegionEnumeration
   name "aws_vpc_endpoint_coverage"
   desc "Per-VPC coverage of required AWS-service VPC endpoints (CIS 6.8)."
   example "
@@ -30,8 +31,13 @@ class AwsVpcEndpointCoverage < AwsResourceBase
   attr_reader :violations
 
   def initialize(opts = {})
+    opts = opts.dup
+    # Must be removed BEFORE super — AwsResourceBase forwards unknown keys to
+    # validate_parameters, which raises on anything outside its allow-list.
+    region_override = Array(opts.delete(:regions))
     super(opts)
     validate_parameters(allow: [:required_endpoints])
+    @all_regions = resolve_regions(region_override)
     @required = Array(opts[:required_endpoints]).map(&:to_s)
     @violations = []
     fetch_data
@@ -49,9 +55,9 @@ class AwsVpcEndpointCoverage < AwsResourceBase
 
   def fetch_data
     @fetched = false
-    catch_aws_errors do
-      vpcs = @aws.compute_client.describe_vpcs.vpcs || []
-      endpoints = @aws.compute_client.describe_vpc_endpoints.vpc_endpoints || []
+    each_region_client(::Aws::EC2::Client) do |client, region|
+      vpcs = client.describe_vpcs.vpcs || []
+      endpoints = client.describe_vpc_endpoints.vpc_endpoints || []
       @fetched = true
 
       available_per_vpc = endpoints.each_with_object({}) do |ep, h|
@@ -64,7 +70,7 @@ class AwsVpcEndpointCoverage < AwsResourceBase
         present = available_per_vpc[vpc.vpc_id] || []
         @required.each do |service|
           next if present.include?(service)
-          @violations << { vpc_id: vpc.vpc_id, missing_service: service }
+          @violations << { region: region, vpc_id: vpc.vpc_id, missing_service: service }
         end
       end
     end

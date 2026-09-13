@@ -94,6 +94,12 @@ def load_profile_libraries!
   abort "FATAL: no vendored inspec-aws found — run `cinc-auditor vendor . --overwrite` first." if vendor.nil?
   $LOAD_PATH.unshift(vendor)
   require "aws_backend"
+
+  # Underscore-prefixed helper libraries load first in InSpec's alphabetical
+  # order and define the modules resources `include` (e.g. RegionEnumeration).
+  # Evaluating a resource without them raises NameError, which would look like a
+  # broken resource rather than a harness that loaded things out of order.
+  Dir.glob("libraries/_*.rb").sort.each { |f| eval(File.read(f), TOPLEVEL_BINDING, f) } # rubocop:disable Security/Eval
 end
 
 missing_gems = install_stubs!(MANIFEST.fetch("resources"))

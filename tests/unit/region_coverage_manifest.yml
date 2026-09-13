@@ -28,22 +28,26 @@ resources:
     klass: AwsVpcEndpointCoverage
     args: { required_endpoints: ["com.amazonaws.us-east-1.s3"] }
     watch: { service: ec2, operation: describe_vpcs }
-    status: known_blind
+    status: enforced
 
   - resource: aws_vpc_flow_log_destinations
     klass: AwsVpcFlowLogDestinations
     watch: { service: ec2, operation: describe_flow_logs }
-    status: known_blind
+    status: enforced
 
   - resource: aws_vpc_peering_route_violations
     klass: AwsVpcPeeringRouteViolations
-    watch: { service: ec2, operation: describe_vpc_peering_connections }
-    status: known_blind
+    # Watches describe_route_tables, NOT describe_vpc_peering_connections: this
+    # resource finds peering routes by walking route tables, and never calls the
+    # peering API. Watching the wrong operation makes a resource look like it
+    # queries no regions at all — which is how this entry was first written.
+    watch: { service: ec2, operation: describe_route_tables }
+    status: enforced
 
   - resource: aws_network_acls_admin_ingress
     klass: AwsNetworkAclsAdminIngress
     watch: { service: ec2, operation: describe_network_acls }
-    status: known_blind
+    status: enforced
 
   # Reference implementations — these already walk regions correctly and are
   # enforced, so the harness is proven to pass as well as fail.
