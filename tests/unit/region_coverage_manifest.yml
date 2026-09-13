@@ -1,0 +1,58 @@
+# Which custom resources must enumerate every enabled region, and how the
+# harness should construct and observe each one.
+#
+# This manifest is the checklist for sparc-validate's region-blind finding
+# (cis-aws-foundations-baseline#28): a resource bound to a single
+# `aws_region` client silently never assesses workloads elsewhere, and the
+# result is a clean report rather than an error.
+#
+# Each entry:
+#   resource  - the library file under libraries/ (without .rb)
+#   klass     - the Ruby class it defines
+#   args      - keyword args passed to the constructor (optional)
+#   watch     - service + operation whose per-region invocation proves the walk,
+#               plus an optional `payload` giving a minimal valid response shape
+#               for operations with required response members
+#   status    - `enforced` once fixed; `known_blind` until then. A known_blind
+#               entry is REPORTED but does not fail the build, so this harness
+#               can land before the fixes and turn each one green as it ships.
+#               A resource that regresses from enforced back to blind DOES fail.
+#
+# Adding a new region-sensitive resource? Add it here. An entry absent from
+# this file is not checked by anything.
+
+regions: [us-east-1, us-west-2, eu-west-1]
+
+resources:
+  - resource: aws_vpc_endpoint_coverage
+    klass: AwsVpcEndpointCoverage
+    args: { required_endpoints: ["com.amazonaws.us-east-1.s3"] }
+    watch: { service: ec2, operation: describe_vpcs }
+    status: known_blind
+
+  - resource: aws_vpc_flow_log_destinations
+    klass: AwsVpcFlowLogDestinations
+    watch: { service: ec2, operation: describe_flow_logs }
+    status: known_blind
+
+  - resource: aws_vpc_peering_route_violations
+    klass: AwsVpcPeeringRouteViolations
+    watch: { service: ec2, operation: describe_vpc_peering_connections }
+    status: known_blind
+
+  - resource: aws_network_acls_admin_ingress
+    klass: AwsNetworkAclsAdminIngress
+    watch: { service: ec2, operation: describe_network_acls }
+    status: known_blind
+
+  # Reference implementations — these already walk regions correctly and are
+  # enforced, so the harness is proven to pass as well as fail.
+  - resource: aws_iam_access_analyzers
+    klass: AwsIamAccessAnalyzers
+    watch:
+      service: accessanalyzer
+      operation: list_analyzers
+      # list_analyzers has a required `analyzers` member — an empty stub payload
+      # raises before the resource is exercised at all.
+      payload: { analyzers: [] }
+    status: enforced
