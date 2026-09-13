@@ -32,7 +32,12 @@ resources:
 
   - resource: aws_vpc_flow_log_destinations
     klass: AwsVpcFlowLogDestinations
-    watch: { service: ec2, operation: describe_flow_logs }
+    watch:
+      service: ec2
+      operation: describe_flow_logs
+      # Paginates: without a payload the stub returns a placeholder next_token
+      # forever and the run hangs rather than failing.
+      payload: { flow_logs: [] }
     status: enforced
 
   - resource: aws_vpc_peering_route_violations
