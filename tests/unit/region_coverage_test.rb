@@ -80,7 +80,9 @@ def install_stubs!(entries)
     # `analyzers`, for example — so an empty payload raises before the resource
     # is ever exercised. `payload:` in the manifest supplies a minimal valid shape.
     payload = (w["payload"] || {}).transform_keys(&:to_sym)
-    by_service[svc][w.fetch("operation").to_sym] = recorder(e.fetch("resource"), payload)
+    op = w.fetch("operation").to_sym
+    key = "#{svc}/#{op}"
+    by_service[svc][op] = recorder(key, payload)
   end
   by_service.each do |svc, stubs|
     next if svc != "ec2" && !Aws.constants.any? { |c| c.to_s.casecmp?(svc) }
@@ -114,6 +116,7 @@ end
 
 failures = []
 reported = []
+unobservable = []
 
 MANIFEST.fetch("resources").each do |e|
   name   = e.fetch("resource")
@@ -128,7 +131,9 @@ MANIFEST.fetch("resources").each do |e|
   klass = Object.const_get(e.fetch("klass"))
   args  = (e["args"] || {}).transform_keys(&:to_sym)
 
-  OBSERVED[name].clear
+  w = e.fetch("watch")
+  key = "#{w.fetch('service')}/#{w.fetch('operation')}"
+  OBSERVED[key].clear
   begin
     args.empty? ? klass.new : klass.new(**args)
   rescue StandardError => ex
@@ -136,11 +141,24 @@ MANIFEST.fetch("resources").each do |e|
     next
   end
 
-  seen   = OBSERVED[name].uniq.sort
+  seen   = OBSERVED[key].uniq.sort
   missed = REGIONS.sort - seen
 
   if missed.empty?
     puts "  PASS         #{name} — queried all #{REGIONS.size} regions"
+  elsif status == "unobservable"
+    # Not a pass and not a defect: something about the service makes the walk
+    # invisible to a stubbed client (endpoint discovery is the usual cause —
+    # it fails closed under stub_responses before any operation is reached).
+    # Recorded so nobody "fixes" a resource that is already correct, and so the
+    # gap in coverage is visible rather than implied by absence.
+    reason = e["reason"].to_s
+    if reason.empty?
+      failures << "#{name}: status `unobservable` requires a `reason`"
+    else
+      unobservable << "#{name}: #{reason}"
+      puts "  UNOBSERVABLE #{name} — #{reason}"
+    end
   elsif status == "known_blind"
     reported << "#{name}: queried #{seen.inspect}, never #{missed.inspect}"
     puts "  KNOWN-BLIND  #{name} — queried #{seen.inspect}, never #{missed.inspect}"
@@ -151,6 +169,11 @@ MANIFEST.fetch("resources").each do |e|
 end
 
 puts
+unless unobservable.empty?
+  puts "#{unobservable.size} resource(s) NOT observable by this harness (not a defect):"
+  unobservable.each { |u| puts "  - #{u}" }
+  puts
+end
 unless reported.empty?
   puts "#{reported.size} resource(s) still region-blind (tracked, not gating):"
   reported.each { |r| puts "  - #{r}" }
@@ -158,7 +181,7 @@ unless reported.empty?
 end
 
 if failures.empty?
-  puts "region coverage: OK (#{MANIFEST.fetch('resources').size} checked, #{reported.size} known-blind)"
+  puts "region coverage: OK (#{MANIFEST.fetch('resources').size} checked, #{reported.size} known-blind, #{unobservable.size} unobservable)"
   exit 0
 end
 
