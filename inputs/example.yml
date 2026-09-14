@@ -63,10 +63,16 @@ expected_vpc_flow_log_destinations: []
 
 # ---- SCOPING ----------------------------------------------------------------
 
-# Regions to enumerate. EMPTY = every region, discovered dynamically.
-# Narrowing makes the scan faster and blinder.
-scan_regions: []
-
+# Regions to assess. REQUIRED -- an empty value is an error, not a fallback:
+# the profile refuses to assess a single region silently, because nothing in the
+# resulting evidence would distinguish "we looked and found nothing" from "we did
+# not look".
+#
+# "*" sweeps every enabled region in the partition and narrows to GovCloud
+# automatically. Replace it with an explicit list to scan faster and to state the
+# assessed scope where an assessor can read it.
+scan_regions:
+  - "*"
 # IAM usernames that are service accounts rather than humans. They are exempt
 # from the console/MFA controls that only make sense for people.
 # EMPTY = every IAM user is treated as human, which produces findings against
