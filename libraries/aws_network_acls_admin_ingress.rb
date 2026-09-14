@@ -60,7 +60,10 @@ class AwsNetworkAclsAdminIngress < AwsResourceBase
   def fetch_data
     @fetched = false
     each_region_client(::Aws::EC2::Client) do |client, region|
-      acls = client.describe_network_acls.network_acls || []
+      # Paginated: an ACL past the first page would go unassessed and the
+      # control would pass on an incomplete set.
+      acls = paginate_all(args: {}) { |a| client.describe_network_acls(a) }
+             .flat_map { |r| Array(r.network_acls) }
       @fetched = true
       acls.each do |acl|
         ingress_entries = (acl.entries || []).reject(&:egress)

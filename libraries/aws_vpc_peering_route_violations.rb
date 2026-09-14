@@ -67,7 +67,10 @@ class AwsVpcPeeringRouteViolations < AwsResourceBase
   def fetch_data
     @fetched = false
     each_region_client(::Aws::EC2::Client) do |client, region|
-      route_tables = client.describe_route_tables.route_tables || []
+      # Paginated: a large account's route tables run past one page, and a
+      # peering violation in the tail would simply never be seen.
+      route_tables = paginate_all(args: {}) { |a| client.describe_route_tables(a) }
+                     .flat_map { |r| Array(r.route_tables) }
       @fetched = true
       route_tables.each do |rt|
         (rt.routes || []).each do |route|

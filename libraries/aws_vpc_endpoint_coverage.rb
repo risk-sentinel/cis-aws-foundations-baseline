@@ -56,8 +56,13 @@ class AwsVpcEndpointCoverage < AwsResourceBase
   def fetch_data
     @fetched = false
     each_region_client(::Aws::EC2::Client) do |client, region|
-      vpcs = client.describe_vpcs.vpcs || []
-      endpoints = client.describe_vpc_endpoints.vpc_endpoints || []
+      # Paginated: describe_vpcs and describe_vpc_endpoints are capped, so a
+      # single call silently drops everything past the first page and the
+      # coverage answer would be computed against a partial set.
+      vpcs = paginate_all(args: {}) { |a| client.describe_vpcs(a) }
+             .flat_map { |r| Array(r.vpcs) }
+      endpoints = paginate_all(args: {}) { |a| client.describe_vpc_endpoints(a) }
+                  .flat_map { |r| Array(r.vpc_endpoints) }
       @fetched = true
 
       available_per_vpc = endpoints.each_with_object({}) do |ep, h|
