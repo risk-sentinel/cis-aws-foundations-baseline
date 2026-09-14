@@ -20,9 +20,18 @@
 #
 # Run: ruby tests/unit/region_scope_test.rb   (needs `cinc-auditor vendor` first)
 
-ENV["AWS_REGION"]            ||= "us-east-1"
-ENV["AWS_ACCESS_KEY_ID"]     ||= "stubbed"
-ENV["AWS_SECRET_ACCESS_KEY"] ||= "stubbed"
+# Region fixtures. Named rather than repeated inline so the intent of each one is
+# readable at its use site: which regions the account "has", which the caller
+# asks for, and which is deliberately outside the discovered set.
+PRIMARY        = "us-east-1"
+SECONDARY      = "us-west-2"
+TERTIARY       = "eu-west-1"
+UNDISCOVERED   = "eu-central-1"
+STUB_CREDENTIAL = "stubbed"
+
+ENV["AWS_REGION"]            ||= PRIMARY
+ENV["AWS_ACCESS_KEY_ID"]     ||= STUB_CREDENTIAL
+ENV["AWS_SECRET_ACCESS_KEY"] ||= STUB_CREDENTIAL
 
 require "inspec"
 require "aws-sdk-core"
@@ -34,7 +43,7 @@ $LOAD_PATH.unshift(VENDOR)
 require "aws_backend"
 eval(File.read("libraries/_region_scope_helpers.rb"), TOPLEVEL_BINDING, "libraries/_region_scope_helpers.rb") # rubocop:disable Security/Eval
 
-DISCOVERED = %w[us-east-1 us-west-2 eu-west-1].freeze
+DISCOVERED = [PRIMARY, SECONDARY, TERTIARY].freeze
 FAILURES = []
 
 class Probe
@@ -59,13 +68,13 @@ aws = AwsConnection.new({ client_args: {} })
 probe = Probe.new
 
 # --- an explicit list is honoured verbatim, and does NOT discover
-regions, error = probe.resolve_region_scope(aws, %w[us-east-1 eu-central-1])
-check("explicit list -> those regions",        regions, %w[us-east-1 eu-central-1])
+regions, error = probe.resolve_region_scope(aws, [PRIMARY, UNDISCOVERED])
+check("explicit list -> those regions",        regions, [PRIMARY, UNDISCOVERED])
 check("explicit list -> no error",             error,   nil)
 
 # --- blank entries are stripped; "" must never become a region named ""
-regions, error = probe.resolve_region_scope(aws, ["us-east-1", "", "  "])
-check("blank entries stripped",                regions, %w[us-east-1])
+regions, error = probe.resolve_region_scope(aws, [PRIMARY, "", "  "])
+check("blank entries stripped",                regions, [PRIMARY])
 check("blank entries -> no error",             error,   nil)
 
 # --- the explicit sweep sentinel discovers
