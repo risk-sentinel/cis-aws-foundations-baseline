@@ -107,6 +107,35 @@ module RegionScope
     [rows, errors]
   end
 
+  # Yield a freshly constructed, region-bound client per region.
+  #
+  # The sibling of each_region_collecting, for resources that accumulate into
+  # their own structures rather than returning rows. Clients are constructed
+  # DIRECTLY rather than through @aws.aws_client: that accessor caches by class
+  # with no region in the key, so every region would be serialised through one
+  # client bound to one region -- the original bug, reintroduced.
+  #
+  # A region that raises is recorded in region_errors and skipped, so a partial
+  # sweep is visible rather than passing as a complete one.
+  def each_region_client(klass)
+    @region_errors ||= {}
+    Array(@all_regions).each do |region|
+      begin
+        yield(klass.new(region: region), region)
+      rescue StandardError => e
+        @region_errors[region] = "#{e.class}: #{e.message}"
+      end
+    end
+  end
+
+  def region_errors
+    @region_errors ||= {}
+  end
+
+  def regions_scanned
+    Array(@all_regions) - region_errors.keys
+  end
+
   # Route a single-target lookup to the right region.
   #
   # An ARN carries its own region, so an identifier that is one answers the
