@@ -20,7 +20,7 @@
 # accessor pattern.
 
 class AwsVpcFlowLogDestinations < AwsResourceBase
-  include RegionEnumeration
+  include RegionScope
   name "aws_vpc_flow_log_destinations"
   desc "VPC Flow Log enumeration with destination_type / destination / traffic_type."
   example "
@@ -29,7 +29,7 @@ class AwsVpcFlowLogDestinations < AwsResourceBase
     end
   "
 
-  attr_reader :table
+  attr_reader :table, :connection_error
 
   FilterTable.create
     .register_column(:flow_log_ids,         field: :flow_log_id)
@@ -48,7 +48,7 @@ class AwsVpcFlowLogDestinations < AwsResourceBase
     region_override = Array(opts.delete(:regions))
     super(opts)
     validate_parameters
-    @all_regions = resolve_regions(region_override)
+    @all_regions = region_scope_or_fail!(@aws, region_override)
     @table = fetch_data
   end
 

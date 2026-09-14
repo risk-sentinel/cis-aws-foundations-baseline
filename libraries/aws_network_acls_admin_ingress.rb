@@ -17,7 +17,7 @@
 # Context: docs/dev/Vendored_Resource_Gaps.md.
 
 class AwsNetworkAclsAdminIngress < AwsResourceBase
-  include RegionEnumeration
+  include RegionScope
   name "aws_network_acls_admin_ingress"
   desc "Network ACLs that ALLOW ingress from 0.0.0.0/0 to admin ports."
   example "
@@ -32,7 +32,7 @@ class AwsNetworkAclsAdminIngress < AwsResourceBase
   ALL      = "-1".freeze
   PERMISSIVE_PROTOCOLS = [TCP, UDP, ALL].freeze
 
-  attr_reader :violations, :admin_ports
+  attr_reader :violations, :admin_ports, :connection_error
 
   def initialize(opts = {})
     opts = opts.dup
@@ -43,7 +43,7 @@ class AwsNetworkAclsAdminIngress < AwsResourceBase
     validate_parameters(allow: [:admin_ports])
     @admin_ports = Array(opts[:admin_ports] || [22, 3389]).map(&:to_i)
     @violations = []
-    @all_regions = resolve_regions(region_override)
+    @all_regions = region_scope_or_fail!(@aws, region_override)
     fetch_data
   end
 

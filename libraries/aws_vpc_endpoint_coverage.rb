@@ -17,7 +17,7 @@
 # Context: docs/dev/Vendored_Resource_Gaps.md.
 
 class AwsVpcEndpointCoverage < AwsResourceBase
-  include RegionEnumeration
+  include RegionScope
   name "aws_vpc_endpoint_coverage"
   desc "Per-VPC coverage of required AWS-service VPC endpoints (CIS 6.8)."
   example "
@@ -28,7 +28,7 @@ class AwsVpcEndpointCoverage < AwsResourceBase
 
   AVAILABLE = "Available".freeze
 
-  attr_reader :violations
+  attr_reader :violations, :connection_error
 
   def initialize(opts = {})
     opts = opts.dup
@@ -37,7 +37,7 @@ class AwsVpcEndpointCoverage < AwsResourceBase
     region_override = Array(opts.delete(:regions))
     super(opts)
     validate_parameters(allow: [:required_endpoints])
-    @all_regions = resolve_regions(region_override)
+    @all_regions = region_scope_or_fail!(@aws, region_override)
     @required = Array(opts[:required_endpoints]).map(&:to_s)
     @violations = []
     fetch_data
