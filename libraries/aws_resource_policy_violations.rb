@@ -31,6 +31,7 @@
 require "set"
 
 class AwsResourcePolicyViolations < AwsResourceBase
+  include RegionScope
   name "aws_resource_policy_violations"
   desc "Scan AWS resource-based policies for Principal: \"*\" without restrictive Condition."
   example "
@@ -39,7 +40,7 @@ class AwsResourcePolicyViolations < AwsResourceBase
     end
   "
 
-  attr_reader :violations, :partial_failures, :excluded_arns
+  attr_reader :violations, :partial_failures, :excluded_arns, :connection_error
 
   def initialize(opts = {})
     opts = opts.dup
@@ -50,7 +51,7 @@ class AwsResourcePolicyViolations < AwsResourceBase
     validate_parameters
     @violations = []
     @partial_failures = []
-    @regions = region_override.empty? ? fetch_default_regions : region_override
+    @regions = region_scope_or_fail!(@aws, region_override)
     fetch_data
   end
 
@@ -64,13 +65,6 @@ class AwsResourcePolicyViolations < AwsResourceBase
 
   private
 
-  def fetch_default_regions
-    regions = []
-    catch_aws_errors do
-      regions = @aws.compute_client.describe_regions.regions.map(&:region_name)
-    end
-    regions
-  end
 
   def fetch_data
     scan_s3

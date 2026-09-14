@@ -19,7 +19,7 @@
 # Context: docs/dev/Vendored_Resource_Gaps.md.
 
 class AwsVpcPeeringRouteViolations < AwsResourceBase
-  include RegionEnumeration
+  include RegionScope
   name "aws_vpc_peering_route_violations"
   desc "VPC-peering route-table CIDR allowlist enforcement (CIS 6.6)."
   example "
@@ -28,7 +28,7 @@ class AwsVpcPeeringRouteViolations < AwsResourceBase
     end
   "
 
-  attr_reader :violations
+  attr_reader :violations, :connection_error
 
   def initialize(opts = {})
     # An EMPTY allowlist is a legitimate state — "no peering is approved yet" —
@@ -46,7 +46,7 @@ class AwsVpcPeeringRouteViolations < AwsResourceBase
     region_override = Array(opts.delete(:regions))
     super(opts)
     validate_parameters(allow: [:allowed_cidrs])
-    @all_regions = resolve_regions(region_override)
+    @all_regions = region_scope_or_fail!(@aws, region_override)
     @allowed_cidrs = (opts[:allowed_cidrs] || {}).each_with_object({}) do |(k, v), h|
       h[k.to_s] = Array(v).map(&:to_s)
     end
@@ -67,7 +67,10 @@ class AwsVpcPeeringRouteViolations < AwsResourceBase
   def fetch_data
     @fetched = false
     each_region_client(::Aws::EC2::Client) do |client, region|
-      route_tables = client.describe_route_tables.route_tables || []
+      # Paginated: a large account's route tables run past one page, and a
+      # peering violation in the tail would simply never be seen.
+      route_tables = paginate_all(args: {}) { |a| client.describe_route_tables(a) }
+                     .flat_map { |r| Array(r.route_tables) }
       @fetched = true
       route_tables.each do |rt|
         (rt.routes || []).each do |route|

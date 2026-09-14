@@ -17,7 +17,7 @@
 # Context: docs/dev/Vendored_Resource_Gaps.md.
 
 class AwsVpcEndpointCoverage < AwsResourceBase
-  include RegionEnumeration
+  include RegionScope
   name "aws_vpc_endpoint_coverage"
   desc "Per-VPC coverage of required AWS-service VPC endpoints (CIS 6.8)."
   example "
@@ -28,7 +28,7 @@ class AwsVpcEndpointCoverage < AwsResourceBase
 
   AVAILABLE = "Available".freeze
 
-  attr_reader :violations
+  attr_reader :violations, :connection_error
 
   def initialize(opts = {})
     opts = opts.dup
@@ -37,7 +37,7 @@ class AwsVpcEndpointCoverage < AwsResourceBase
     region_override = Array(opts.delete(:regions))
     super(opts)
     validate_parameters(allow: [:required_endpoints])
-    @all_regions = resolve_regions(region_override)
+    @all_regions = region_scope_or_fail!(@aws, region_override)
     @required = Array(opts[:required_endpoints]).map(&:to_s)
     @violations = []
     fetch_data
@@ -56,8 +56,13 @@ class AwsVpcEndpointCoverage < AwsResourceBase
   def fetch_data
     @fetched = false
     each_region_client(::Aws::EC2::Client) do |client, region|
-      vpcs = client.describe_vpcs.vpcs || []
-      endpoints = client.describe_vpc_endpoints.vpc_endpoints || []
+      # Paginated: describe_vpcs and describe_vpc_endpoints are capped, so a
+      # single call silently drops everything past the first page and the
+      # coverage answer would be computed against a partial set.
+      vpcs = paginate_all(args: {}) { |a| client.describe_vpcs(a) }
+             .flat_map { |r| Array(r.vpcs) }
+      endpoints = paginate_all(args: {}) { |a| client.describe_vpc_endpoints(a) }
+                  .flat_map { |r| Array(r.vpc_endpoints) }
       @fetched = true
 
       available_per_vpc = endpoints.each_with_object({}) do |ep, h|

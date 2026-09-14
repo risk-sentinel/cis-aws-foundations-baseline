@@ -14,6 +14,7 @@
 # single client. Per-region instantiation bypasses the cache intentionally.
 
 class AwsIamAccessAnalyzers < AwsResourceBase
+  include RegionScope
   name "aws_iam_access_analyzers"
   desc "IAM External Access Analyzer enumeration across active regions."
   example "
@@ -53,7 +54,7 @@ class AwsIamAccessAnalyzers < AwsResourceBase
       @all_regions = Array(region_override)
       return
     end
-    @all_regions = region_override.empty? ? fetch_default_regions : region_override
+    @all_regions = region_scope_or_fail!(@aws, region_override)
     @table = fetch_data
   end
 
@@ -75,13 +76,6 @@ class AwsIamAccessAnalyzers < AwsResourceBase
 
   private
 
-  def fetch_default_regions
-    regions = []
-    catch_aws_errors do
-      regions = @aws.compute_client.describe_regions.regions.map(&:region_name)
-    end
-    regions
-  end
 
   def fetch_data
     rows = []

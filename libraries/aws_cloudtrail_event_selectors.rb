@@ -16,6 +16,7 @@
 # 'arn:aws-us-gov:s3' so GovCloud runs cleanly without a per-call kwarg.
 
 class AwsCloudtrailEventSelectors < AwsResourceBase
+  include RegionScope
   name "aws_cloudtrail_event_selectors"
   desc "CloudTrail event-selector enumeration with S3 object-logging predicates."
   example "
@@ -25,7 +26,7 @@ class AwsCloudtrailEventSelectors < AwsResourceBase
     end
   "
 
-  attr_reader :table
+  attr_reader :table, :connection_error
 
   FilterTable.create
     .register_column(:trail_arns,       field: :trail_arn)
@@ -40,7 +41,7 @@ class AwsCloudtrailEventSelectors < AwsResourceBase
     region_override = Array(opts.delete(:regions))
     super(opts)
     validate_parameters
-    @all_regions = region_override.empty? ? fetch_default_regions : region_override
+    @all_regions = region_scope_or_fail!(@aws, region_override)
     @table = fetch_data
   end
 
@@ -154,11 +155,4 @@ class AwsCloudtrailEventSelectors < AwsResourceBase
     }
   end
 
-  def fetch_default_regions
-    regions = []
-    catch_aws_errors do
-      regions = @aws.compute_client.describe_regions.regions.map(&:region_name)
-    end
-    regions
-  end
 end
