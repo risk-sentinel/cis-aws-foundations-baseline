@@ -75,10 +75,14 @@ def run_coverage(required, per_region_endpoints)
       },
     },
   }
+  # No client_args: the resource's validate_parameters allow-list is
+  # [:required_endpoints] only, and AwsResourceBase forwards anything it does not
+  # recognise straight to it. Passing a connection arg here raises ArgumentError
+  # before the resource does any work. region_coverage_test.rb constructs the
+  # same way.
   AwsVpcEndpointCoverage.new(
     required_endpoints: required,
     regions: [PRIMARY, SECONDARY],
-    client_args: {},
   )
 end
 
