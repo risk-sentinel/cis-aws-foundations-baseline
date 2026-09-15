@@ -175,7 +175,10 @@ control 'C-6.8' do
   else
     # When required_endpoints is non-empty OR no VPCs exist, run the
     # coverage scan. With no VPCs the scan is vacuously empty → passes.
-    describe aws_vpc_endpoint_coverage(required_endpoints: required_endpoints) do
+    describe aws_vpc_endpoint_coverage(
+      required_endpoints: required_endpoints,
+      regions:            Array(input('scan_regions')),
+    ) do
       its('violations') { should be_empty }
     end
   end
