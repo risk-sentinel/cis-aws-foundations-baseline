@@ -78,7 +78,10 @@ control 'C-6.6' do
   # If the account has no peering connections at all, violations is
   # empty → control passes vacuously.
   allowed_cidrs = input('vpc_peering_allowed_cidrs') || {}
-  describe aws_vpc_peering_route_violations(allowed_cidrs: allowed_cidrs) do
+  describe aws_vpc_peering_route_violations(
+    allowed_cidrs: allowed_cidrs,
+    regions:       Array(input('scan_regions')),
+  ) do
     its('violations') { should be_empty }
   end
 end
