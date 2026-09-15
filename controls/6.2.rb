@@ -72,7 +72,10 @@ control 'C-6.2' do
     applicable
   end
 
-  describe aws_network_acls_admin_ingress(admin_ports: [22, 3389]) do
+  describe aws_network_acls_admin_ingress(
+    admin_ports: [22, 3389],
+    regions:     Array(input('scan_regions')),
+  ) do
     its('violations') { should be_empty }
   end
 end
