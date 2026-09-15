@@ -53,6 +53,20 @@ class AwsVpcEndpointCoverage < AwsResourceBase
 
   private
 
+  # The region named inside an endpoint service name, or nil if it names none.
+  #
+  # Scans the dotted segments rather than anchoring at a fixed position, because
+  # the region does not always sit in the same place:
+  #
+  #   com.amazonaws.us-east-1.s3                     -> us-east-1
+  #   com.amazonaws.vpce.us-east-1.vpce-svc-0abc123  -> us-east-1   (PrivateLink)
+  #   some.partner.service                           -> nil         (applies everywhere)
+  REGION_SEGMENT = /\A[a-z]{2}(?:-[a-z]+)+-\d\z/.freeze
+
+  def region_in_service_name(service)
+    service.to_s.split(".").find { |seg| REGION_SEGMENT.match?(seg) }
+  end
+
   def fetch_data
     @fetched = false
     each_region_client(::Aws::EC2::Client) do |client, region|
@@ -71,9 +85,28 @@ class AwsVpcEndpointCoverage < AwsResourceBase
         h[ep.vpc_id] << ep.service_name
       end
 
+      # Only the requirements that BELONG to this region.
+      #
+      # An endpoint service name is region-qualified —
+      # com.amazonaws.us-east-1.s3 — and the documented contract is that the
+      # consumer scopes by region by listing the region-qualified names. That
+      # contract was unsatisfiable while every VPC was checked against the whole
+      # list: a us-east-1 VPC was reported missing com.amazonaws.us-west-2.s3,
+      # which it cannot ever have. Single-region scans hid it, because the list
+      # and the scan named the same region; sweeping two regions made it
+      # reachable, and it fires on every VPC.
+      #
+      # A name carrying no region applies everywhere, so a consumer can still
+      # express a requirement region-agnostically if a future service name has
+      # that shape.
+      required_here = @required.select do |service|
+        named = region_in_service_name(service)
+        named.nil? || named == region
+      end
+
       vpcs.each do |vpc|
         present = available_per_vpc[vpc.vpc_id] || []
-        @required.each do |service|
+        required_here.each do |service|
           next if present.include?(service)
           @violations << { region: region, vpc_id: vpc.vpc_id, missing_service: service }
         end
