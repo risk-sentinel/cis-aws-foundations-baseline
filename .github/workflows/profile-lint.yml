@@ -124,6 +124,21 @@ jobs:
             --entrypoint /opt/cinc-workstation/embedded/bin/ruby \
             "${AUDITOR_IMAGE}" tests/unit/region_coverage_test.rb
 
+      - name: VPC endpoint coverage (stubbed AWS, no credentials)
+        # C-6.8 checked every VPC against the WHOLE required-endpoint list, so a
+        # us-east-1 VPC was reported missing com.amazonaws.us-west-2.s3 — which
+        # it can never have. A single-region scan hid it; sweeping two regions
+        # makes it fire on every VPC.
+        #
+        # Asserts BOTH directions, because a matcher that simply ignored the
+        # region would satisfy "no cross-region false violation" while also
+        # failing to report a genuinely missing endpoint.
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$PWD:/work" -w /work \
+            --entrypoint /opt/cinc-workstation/embedded/bin/ruby \
+            "${AUDITOR_IMAGE}" tests/unit/vpc_endpoint_coverage_test.rb
+
       - name: Control-tag completeness
         # `check` and `json` read tags but assert nothing about them. A control
         # with no Rev 4 anchor, a tag written twice, or a tag whose value is a
