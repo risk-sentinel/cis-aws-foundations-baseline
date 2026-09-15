@@ -246,32 +246,83 @@ def strict_region_resources(roots):
     return names
 
 
-def region_argument_violations(path: Path, strict):
-    """Calls to a strict resource whose argument list carries no `regions:`.
+# Longest argument list we will scan before giving up on finding the closing
+# paren. Generous: the point is to bound a runaway scan on malformed source, not
+# to limit real calls.
+MAX_ARG_SPAN = 2000
 
-    Balances parentheses rather than reading one line, because a call with a
-    region scope is usually the one that got wrapped across lines.
+
+def _argument_text(body: str, open_paren: int) -> str:
+    """The text between a call's parentheses, balanced across newlines.
+
+    A call that HAS a region scope is usually the one someone wrapped over
+    several lines, so a line-at-a-time read would miss exactly the cases the
+    rule exists to pass.
     """
+    depth = 0
+    for i in range(open_paren, min(len(body), open_paren + MAX_ARG_SPAN)):
+        if body[i] == "(":
+            depth += 1
+        elif body[i] == ")":
+            depth -= 1
+            if depth == 0:
+                return body[open_paren + 1:i]
+    # Unbalanced within the span: fall back to a prefix so the call is still
+    # reported rather than silently skipped.
+    return body[open_paren + 1:open_paren + 200]
+
+
+def _calls_without_regions(body: str, name: str):
+    """(lineno, rendered call) for each construction of `name` lacking regions:."""
+    for m in re.finditer(rf"\b{re.escape(name)}\(", body):
+        args = _argument_text(body, m.end() - 1)
+        if "regions" in args:
+            continue
+        yield body[:m.start()].count("\n") + 1, f"{name}({args.strip()[:80]})"
+
+
+def region_argument_violations(path: Path, strict):
+    """Calls to a strict resource whose argument list carries no `regions:`."""
     if not strict:
         return []
     body = _without_examples(path.read_text(encoding="utf-8", errors="replace"))
-    out = []
-    for name in strict:
-        for m in re.finditer(rf"\b{re.escape(name)}\(", body):
-            depth, end = 0, None
-            for i in range(m.end() - 1, min(len(body), m.end() + 2000)):
-                if body[i] == "(":
-                    depth += 1
-                elif body[i] == ")":
-                    depth -= 1
-                    if depth == 0:
-                        end = i
-                        break
-            args = body[m.end():end] if end else body[m.end():m.end() + 200]
-            if "regions" not in args:
-                lineno = body[:m.start()].count("\n") + 1
-                out.append((lineno, f"{name}({args.strip()[:80]})"))
-    return out
+    return [hit for name in strict for hit in _calls_without_regions(body, name)]
+
+
+# One message per rule. Kept beside each other so the three read as a set: every
+# one of them describes an error that only appears on a live exec, which is why
+# a linter carries them at all.
+RULE_MESSAGES = {
+    "resource": (
+        "InSpec resource called in a describe body — raises WrongScopeError at "
+        "exec. Resolve it at control scope instead."
+    ),
+    "helper": (
+        "control-scope helper called inside a deferred block — raises NameError "
+        "at exec, because the example is not the control. Resolve it at control "
+        "scope and close over the value."
+    ),
+    "regions": (
+        "a resource that fails closed without a region scope is constructed with "
+        "no `regions:` — it will report \"no scan_regions supplied\" at exec, "
+        "which reads as a finding and is a wiring bug. "
+        "Pass regions: Array(input('scan_regions'))."
+    ),
+}
+
+
+def _report(found) -> bool:
+    """Print every rule's hits. True when anything was found."""
+    any_found = False
+    for kind, message in RULE_MESSAGES.items():
+        hits = found.get(kind) or []
+        if not hits:
+            continue
+        any_found = True
+        print(f"::error::{message}")
+        for hit in hits:
+            print(f"  {hit}")
+    return any_found
 
 
 def main(argv):
@@ -303,25 +354,7 @@ def main(argv):
         for lineno, call in region_argument_violations(f, strict):
             found["regions"].append(f"{f}:{lineno}: {call}")
 
-    if found["resource"]:
-        print("::error::InSpec resource called in a describe body — raises "
-              "WrongScopeError at exec. Resolve it at control scope instead.")
-        for f in found["resource"]:
-            print(f"  {f}")
-    if found["helper"]:
-        print("::error::control-scope helper called inside a deferred block — raises "
-              "NameError at exec, because the example is not the control. Resolve it "
-              "at control scope and close over the value.")
-        for f in found["helper"]:
-            print(f"  {f}")
-    if found["regions"]:
-        print("::error::a resource that fails closed without a region scope is "
-              "constructed with no `regions:` — it will report \"no scan_regions "
-              "supplied\" at exec, which reads as a finding and is a wiring bug. "
-              "Pass regions: Array(input('scan_regions')).")
-        for f in found["regions"]:
-            print(f"  {f}")
-    if found["resource"] or found["helper"] or found["regions"]:
+    if _report(found):
         return 1
 
     print(f"OK — no resource calls in describe bodies, no control-scope helpers "
