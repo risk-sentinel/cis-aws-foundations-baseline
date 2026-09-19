@@ -152,7 +152,7 @@ jobs:
 include:
   - project: risk-sentinel/cis-aws-foundations-baseline
     ref: v0.1.8
-    file: /ci/gitlab/exec-evidence.yml
+    file: /ci/jobs/exec-evidence.yml
     inputs:
       target: my-account
       boundary: my-boundary
