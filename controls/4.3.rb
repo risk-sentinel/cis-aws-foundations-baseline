@@ -106,10 +106,10 @@ control 'C-4.3' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['CM-8 a 1']
+  tag nist:                  ['CM-8 a 1', 'CM-8 a 2', 'CM-8 a 5', 'CM-8 b']
   tag ksi:                   ['KSI-PIY-GIV']
-  tag nist_r4:               ['CM-8 a 1']
-  tag cci:                   ['CCI-000389']
+  tag nist_r4:               ['CM-8 b']
+  tag cci:                   ['CCI-003962', 'CCI-003963', 'CCI-003967', 'CCI-001780']
   tag cis_number:            '4.3'
   tag cis_rid:               '4.3'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

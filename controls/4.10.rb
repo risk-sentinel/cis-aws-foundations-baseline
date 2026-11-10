@@ -47,10 +47,10 @@ control 'C-4.10' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['AU-2 a', 'AU-3 a']
+  tag nist:                  ['AU-12 c', 'AU-12 a', 'AU-2 a', 'AU-3 (1)', 'AU-3 d', 'AU-3 f', 'AU-3 b', 'AU-2 c']
   tag ksi:                   ['KSI-CMT-LMC', 'KSI-MLA-LET', 'KSI-MLA-OSM', 'KSI-MLA-RVL']
-  tag nist_r4:               ['AU-2 a', 'AU-3']
-  tag cci:                   ['CCI-000123', 'CCI-000130']
+  tag nist_r4:               ['AU-12 a', 'AU-12 c', 'AU-2 a', 'AU-2 d', 'AU-3', 'AU-3 (1)']
+  tag cci:                   ['CCI-000172', 'CCI-000169', 'CCI-000123', 'CCI-000135', 'CCI-000133', 'CCI-001487', 'CCI-000131', 'CCI-000126']
   tag cis_number:            '4.10'
   tag cis_rid:               '4.10'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

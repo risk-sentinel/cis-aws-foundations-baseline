@@ -55,10 +55,10 @@ control 'C-2.8' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['IA-5 (1) (e)', 'SA-3 a']
-  tag ksi:                   ['KSI-IAM-APM', 'KSI-PIY-RIS', 'KSI-PIY-RSD']
-  tag nist_r4:               ['IA-5 (1) (e)', 'SA-3 a']
-  tag cci:                   ['CCI-000200', 'CCI-000615']
+  tag nist:                  ['IA-5 (1) (h)', 'IA-5 (1) (b)']
+  tag ksi:                   ['KSI-IAM-APM']
+  tag nist_r4:               ['IA-5 (1)']
+  tag cci:                   ['CCI-004066', 'CCI-004061']
   tag cis_number:            '2.8'
   tag cis_rid:               '2.8'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

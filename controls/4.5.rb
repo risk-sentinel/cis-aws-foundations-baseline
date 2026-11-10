@@ -59,10 +59,10 @@ control 'C-4.5' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['SC-28', 'AU-1 a 1 (a)', 'AC-8 a']
-  tag ksi:                   ['KSI-SVC-SIN']
-  tag nist_r4:               ['AU-1 a 1', 'SC-28']
-  tag cci:                   ['CCI-001199', 'CCI-000117', 'CCI-000051']
+  tag nist:                  ['SC-28 (1)', 'SC-28', 'AU-1 a 2', 'AU-1 a 1 (a)', 'AU-1 c 2', 'AU-2 c']
+  tag ksi:                   ['KSI-CMT-LMC', 'KSI-MLA-LET', 'KSI-MLA-OSM', 'KSI-MLA-RVL', 'KSI-SVC-SIN']
+  tag nist_r4:               ['AU-1 a 1', 'AU-1 a 2', 'AU-1 b 2', 'AU-2 d', 'SC-28', 'SC-28 (1)']
+  tag cci:                   ['CCI-002476', 'CCI-002475', 'CCI-001199', 'CCI-000120', 'CCI-000117', 'CCI-000122', 'CCI-000126']
   tag cis_number:            '4.5'
   tag cis_rid:               '4.5'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

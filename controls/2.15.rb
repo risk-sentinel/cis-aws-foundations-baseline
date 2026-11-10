@@ -73,10 +73,10 @@ control 'C-2.15' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['AC-8 a', 'IR-7']
-  tag ksi:                   ['KSI-INR-RIR']
-  tag nist_r4:               ['IR-7']
-  tag cci:                   ['CCI-000051', 'CCI-000839']
+  tag nist:                  ['IR-8 a 10', 'IR-1 b']
+  tag ksi:                   ['KSI-INR-AAR', 'KSI-INR-RIR', 'KSI-INR-RPI']
+  tag nist_r4:               ['IR-1', 'IR-8']
+  tag cci:                   ['CCI-004159', 'CCI-004111', 'CCI-004110']
   tag cis_number:            '2.15'
   tag cis_rid:               '2.15'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'
