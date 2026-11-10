@@ -49,9 +49,10 @@ control 'C-6.2' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['SI-4 (11)', 'PM-5']
-  tag nist_r4:               ['PM-5', 'SI-4 (11)']
-  tag cci:                   ['CCI-002668', 'CCI-000207']
+  tag nist:                  ['CM-6 b']
+  tag ksi:                   ['KSI-CMT-LMC', 'KSI-CMT-RMV', 'KSI-MLA-EVC', 'KSI-SVC-ACM']
+  tag nist_r4:               ['CM-6 b']
+  tag cci:                   ['CCI-000366']
   tag cis_number:            '6.2'
   tag cis_rid:               '6.2'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

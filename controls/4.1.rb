@@ -101,10 +101,10 @@ control 'C-4.1' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['AC-2 f', 'AU-3 a']
-  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS', 'KSI-MLA-OSM']
-  tag nist_r4:               ['AC-2 f', 'AU-3']
-  tag cci:                   ['CCI-000011', 'CCI-000130']
+  tag nist:                  ['AU-3 (1)', 'AU-3 d', 'AU-3 f', 'AU-3 b']
+  tag ksi:                   ['KSI-MLA-OSM']
+  tag nist_r4:               ['AU-3', 'AU-3 (1)']
+  tag cci:                   ['CCI-000135', 'CCI-000133', 'CCI-001487', 'CCI-000131']
   tag cis_number:            '4.1'
   tag cis_rid:               '4.1'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

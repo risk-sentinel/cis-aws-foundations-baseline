@@ -44,10 +44,10 @@ control 'C-6.6' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['SI-4 (11)', 'SI-4 (5)']
-  tag ksi:                   ['KSI-INR-RIR', 'KSI-MLA-LET']
-  tag nist_r4:               ['SI-4 (11)', 'SI-4 (5)']
-  tag cci:                   ['CCI-002668', 'CCI-002663']
+  tag nist:                  ['SC-7 a', 'SC-7 (5)']
+  tag ksi:                   ['KSI-CNA-MAT', 'KSI-CNA-RNT', 'KSI-CNA-ULN', 'KSI-SVC-EIS']
+  tag nist_r4:               ['SC-7 (5)', 'SC-7 a']
+  tag cci:                   ['CCI-001097', 'CCI-001109']
   tag cis_number:            '6.6'
   tag cis_rid:               '6.6'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

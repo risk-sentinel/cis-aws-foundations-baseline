@@ -145,10 +145,10 @@ control 'C-2.21' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['AC-3', 'AC-2 c']
-  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-ELP', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS']
-  tag nist_r4:               ['AC-2 c', 'AC-3']
-  tag cci:                   ['CCI-000213', 'CCI-002113']
+  tag nist:                  ['AC-3', 'AC-6', 'AC-3 (11)', 'AC-6 (7) (a)', 'AC-2 (7) (a)', 'AC-6 (7) (b)']
+  tag ksi:                   ['KSI-IAM-AAM', 'KSI-IAM-APM', 'KSI-IAM-ELP', 'KSI-IAM-JIT']
+  tag nist_r4:               ['AC-2 (7) (a)', 'AC-3', 'AC-6', 'AC-6 (7) (a)', 'AC-6 (7) (b)']
+  tag cci:                   ['CCI-000213', 'CCI-000225', 'CCI-003644', 'CCI-002230', 'CCI-001358', 'CCI-002231']
   tag cis_number:            '2.21'
   tag cis_rid:               '2.21'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

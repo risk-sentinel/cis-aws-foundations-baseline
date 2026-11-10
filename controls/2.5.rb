@@ -67,10 +67,10 @@ control 'C-2.5' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['SC-7 a', 'IA-2 (2)']
-  tag ksi:                   ['KSI-CNA-ULN', 'KSI-IAM-APM', 'KSI-SVC-EIS']
-  tag nist_r4:               ['IA-2 (2)', 'SC-7 a']
-  tag cci:                   ['CCI-001097', 'CCI-000766']
+  tag nist:                  ['IA-2 (1)']
+  tag ksi:                   ['KSI-IAM-APM']
+  tag nist_r4:               ['IA-2 (1)']
+  tag cci:                   ['CCI-000765']
   tag cis_number:            '2.5'
   tag cis_rid:               '2.5'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

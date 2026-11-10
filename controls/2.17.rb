@@ -71,10 +71,10 @@ control 'C-2.17' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['SI-12', 'AU-7 a']
-  tag ksi:                   ['KSI-MLA-OSM', 'KSI-RPL-ABO']
-  tag nist_r4:               ['AU-7 a', 'SI-12']
-  tag cci:                   ['CCI-001315', 'CCI-001875']
+  tag nist:                  ['SI-12', 'SI-12 (3)']
+  tag ksi:                   ['KSI-RPL-ABO', 'KSI-SVC-RUD']
+  tag nist_r4:               ['SI-12']
+  tag cci:                   ['CCI-001315', 'CCI-001678', 'CCI-005008']
   tag cis_number:            '2.17'
   tag cis_rid:               '2.17'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'
