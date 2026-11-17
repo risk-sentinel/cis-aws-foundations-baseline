@@ -91,10 +91,10 @@ control 'C-2.14' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['CM-6 a', 'AC-2 c']
-  tag ksi:                   ['KSI-CMT-LMC', 'KSI-CMT-RMV', 'KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS', 'KSI-MLA-EVC', 'KSI-SVC-ACM']
-  tag nist_r4:               ['AC-2 c', 'CM-6 a']
-  tag cci:                   ['CCI-000364', 'CCI-002113']
+  tag nist:                  ['AC-6 (7) (a)', 'AC-6', 'AC-2 (7) (a)', 'AC-6 (7) (b)']
+  tag ksi:                   ['KSI-IAM-AAM', 'KSI-IAM-ELP', 'KSI-IAM-JIT']
+  tag nist_r4:               ['AC-2 (7) (a)', 'AC-6', 'AC-6 (7) (a)', 'AC-6 (7) (b)']
+  tag cci:                   ['CCI-002230', 'CCI-000225', 'CCI-001358', 'CCI-002231']
   tag cis_number:            '2.14'
   tag cis_rid:               '2.14'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

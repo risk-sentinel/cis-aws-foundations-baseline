@@ -74,10 +74,10 @@ control 'C-2.12' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['AC-2 a', 'SA-3 a']
-  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS', 'KSI-PIY-RIS', 'KSI-PIY-RSD']
-  tag nist_r4:               ['AC-2 a', 'SA-3 a']
-  tag cci:                   ['CCI-002110', 'CCI-000615']
+  tag nist:                  ['AC-2 j', 'AC-2 d 1', 'AC-2 a']
+  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS']
+  tag nist_r4:               ['AC-2 d', 'AC-2 j']
+  tag cci:                   ['CCI-000012', 'CCI-002115', 'CCI-003612']
   tag cis_number:            '2.12'
   tag cis_rid:               '2.12'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

@@ -135,10 +135,10 @@ control 'C-4.7' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['AC-2 f', 'AU-2 a', 'AC-2 a', 'SI-4 a 1']
-  tag ksi:                   ['KSI-CMT-LMC', 'KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS', 'KSI-MLA-LET', 'KSI-MLA-OSM', 'KSI-MLA-RVL', 'KSI-SVC-EIS']
-  tag nist_r4:               ['AC-2 a', 'AC-2 f', 'AU-2 a', 'SI-4 a 1']
-  tag cci:                   ['CCI-000011', 'CCI-000123', 'CCI-002110', 'CCI-001253']
+  tag nist:                  ['AU-12 c', 'AU-12 a', 'AU-2 a', 'SI-4 c 1', 'SI-4 (4) (b)']
+  tag ksi:                   ['KSI-CMT-LMC', 'KSI-MLA-LET', 'KSI-MLA-OSM', 'KSI-MLA-RVL', 'KSI-SVC-EIS']
+  tag nist_r4:               ['AU-12 a', 'AU-12 c', 'AU-2 a', 'SI-4 (4)', 'SI-4 c']
+  tag cci:                   ['CCI-000172', 'CCI-000169', 'CCI-000123', 'CCI-001255', 'CCI-002661', 'CCI-002662']
   tag cis_number:            '4.7'
   tag cis_rid:               '4.7'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

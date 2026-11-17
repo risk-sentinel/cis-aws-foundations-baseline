@@ -96,10 +96,10 @@ control 'C-4.4' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['AU-2 a', 'AC-2 f', 'SC-12 (3)']
-  tag ksi:                   ['KSI-CMT-LMC', 'KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS', 'KSI-MLA-LET', 'KSI-MLA-OSM', 'KSI-MLA-RVL']
-  tag nist_r4:               ['AC-2 f', 'AU-2 a', 'SC-12 (3)']
-  tag cci:                   ['CCI-000123', 'CCI-000011', 'CCI-002447']
+  tag nist:                  ['AU-12 c', 'AU-2 c', 'AU-12 a', 'AU-2 a']
+  tag ksi:                   ['KSI-CMT-LMC', 'KSI-MLA-LET', 'KSI-MLA-OSM', 'KSI-MLA-RVL']
+  tag nist_r4:               ['AU-12 a', 'AU-12 c', 'AU-2 a', 'AU-2 d']
+  tag cci:                   ['CCI-000172', 'CCI-000126', 'CCI-000169', 'CCI-000123']
   tag cis_number:            '4.4'
   tag cis_rid:               '4.4'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

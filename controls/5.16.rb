@@ -78,10 +78,10 @@ control 'C-5.16' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['RA-5 a', 'SC-28']
-  tag ksi:                   ['KSI-SCR-MON', 'KSI-SVC-SIN']
-  tag nist_r4:               ['RA-5 a', 'SC-28']
-  tag cci:                   ['CCI-001055', 'CCI-001199']
+  tag nist:                  ['RA-5 a', 'RA-5 c', 'RA-5 d']
+  tag ksi:                   ['KSI-SCR-MON']
+  tag nist_r4:               ['RA-5 a', 'RA-5 c', 'RA-5 d']
+  tag cci:                   ['CCI-001054', 'CCI-001058', 'CCI-001059']
   tag cis_number:            '5.16'
   tag cis_rid:               '5.16'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

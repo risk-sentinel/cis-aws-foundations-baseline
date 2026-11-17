@@ -111,10 +111,10 @@ control 'C-5.6' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['CM-6 b', 'IA-2 (2)', 'AU-3 a', 'AU-3 d']
-  tag ksi:                   ['KSI-CMT-LMC', 'KSI-CMT-RMV', 'KSI-IAM-APM', 'KSI-MLA-EVC', 'KSI-MLA-OSM', 'KSI-SVC-ACM']
-  tag nist_r4:               ['AU-3', 'CM-6 b', 'IA-2 (2)']
-  tag cci:                   ['CCI-000366', 'CCI-000766', 'CCI-000130', 'CCI-000133']
+  tag nist:                  ['AU-3 (1)', 'AU-3 d', 'AU-3 f', 'AU-3 b', 'AU-6 a', 'AU-6 (1)', 'AU-6 (5)']
+  tag ksi:                   ['KSI-MLA-OSM', 'KSI-MLA-RVL']
+  tag nist_r4:               ['AU-3', 'AU-3 (1)', 'AU-6 (1)', 'AU-6 (5)', 'AU-6 a']
+  tag cci:                   ['CCI-000135', 'CCI-000133', 'CCI-001487', 'CCI-000131', 'CCI-000148', 'CCI-000151', 'CCI-001864', 'CCI-001867']
   tag cis_number:            '5.6'
   tag cis_rid:               '5.6'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

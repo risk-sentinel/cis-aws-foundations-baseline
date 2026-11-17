@@ -66,10 +66,10 @@ control 'C-3.2.2' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['MP-6 a', 'SI-2 a']
-  tag ksi:                   ['KSI-CMT-VTD']
-  tag nist_r4:               ['MP-6 a', 'SI-2 a']
-  tag cci:                   ['CCI-001028', 'CCI-001225']
+  tag nist:                  ['SI-2 (5)', 'SI-2 (4)', 'SI-2 c', 'SI-2 (2)']
+  tag ksi:                   ['KSI-CMT-VTD', 'KSI-SVC-EIS']
+  tag nist_r4:               ['SI-2 (5)', 'SI-2 c']
+  tag cci:                   ['CCI-002613', 'CCI-004961', 'CCI-002605', 'CCI-004955']
   tag cis_number:            '3.2.2'
   tag cis_rid:               '3.2.2'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

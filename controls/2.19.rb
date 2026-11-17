@@ -48,10 +48,10 @@ control 'C-2.19' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['AC-2 f', 'RA-5 a']
-  tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-JIT', 'KSI-IAM-SNU', 'KSI-IAM-SUS', 'KSI-SCR-MON']
-  tag nist_r4:               ['AC-2 f', 'RA-5 a']
-  tag cci:                   ['CCI-000011', 'CCI-001054']
+  tag nist:                  ['AC-2 (1)']
+  tag ksi:                   ['KSI-IAM-JIT', 'KSI-IAM-SUS']
+  tag nist_r4:               ['AC-2 (1)']
+  tag cci:                   ['CCI-000015']
   tag cis_number:            '2.19'
   tag cis_rid:               '2.19'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

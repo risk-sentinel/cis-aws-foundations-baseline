@@ -59,10 +59,10 @@ control 'C-3.1.2' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['AC-3', 'IA-2 (2)', 'AC-8 a']
+  tag nist:                  ['AC-3', 'AC-6', 'AC-3 (11)', 'IA-2 (1)']
   tag ksi:                   ['KSI-IAM-APM', 'KSI-IAM-ELP', 'KSI-IAM-JIT']
-  tag nist_r4:               ['AC-3', 'IA-2 (2)']
-  tag cci:                   ['CCI-000213', 'CCI-000766', 'CCI-000051']
+  tag nist_r4:               ['AC-3', 'AC-6', 'IA-2 (1)']
+  tag cci:                   ['CCI-000213', 'CCI-000225', 'CCI-003644', 'CCI-000765']
   tag cis_number:            '3.1.2'
   tag cis_rid:               '3.1.2'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'

@@ -57,10 +57,10 @@ control 'C-2.2' do
   "
   tag severity:              'medium'
   tag severity_source:       'unassessed'
-  tag nist:                  ['IR-6 a']
-  tag ksi:                   ['KSI-INR-RIR']
-  tag nist_r4:               ['IR-6 a']
-  tag cci:                   ['CCI-000834']
+  tag nist:                  ['IR-6 b', 'IR-6 (3)']
+  tag ksi:                   ['KSI-INR-RIR', 'KSI-SCR-MON']
+  tag nist_r4:               ['IR-6 (3)', 'IR-6 b']
+  tag cci:                   ['CCI-002791', 'CCI-000836', 'CCI-002793']
   tag cis_number:            '2.2'
   tag cis_rid:               '2.2'
   tag cis_benchmark:         'CIS Amazon Web Services Foundations Benchmark v7.0.0'
