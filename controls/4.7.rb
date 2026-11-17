@@ -160,16 +160,21 @@ control 'C-4.7' do
   end
 
   expected = Array(input('expected_vpc_flow_log_destinations'))
-  vpc_ids  = aws_vpcs.vpc_ids
-  flow_logs = aws_vpc_flow_log_destinations
+  # One sweep of the scan regions lists both the VPCs and their flow logs.
+  flow_logs = aws_vpc_flow_log_destinations(regions: Array(input('scan_regions')))
 
-  # Every VPC must have at least one flow log attached. First pass
-  # covers the scanner's current region only — full all-regions
-  # iteration deferred.
-  vpc_ids.each do |vpc_id|
+  # A region that could not be read has no VPCs in the list below; say so
+  # rather than let it pass as a region with nothing to check.
+  describe flow_logs do
+    its('unreadable_regions') { should be_empty }
+  end
+
+  # Every VPC must have at least one flow log attached.
+  flow_logs.vpcs.each do |vpc|
+    vpc_id = vpc[:vpc_id]
     vpc_flow_logs = flow_logs.where(resource_id: vpc_id).entries
 
-    describe "VPC #{vpc_id} must have at least one flow log attached" do
+    describe "VPC #{vpc_id} (#{vpc[:region]}) must have at least one flow log attached" do
       subject { vpc_flow_logs }
       it { should_not be_empty }
     end

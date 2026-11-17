@@ -29,7 +29,9 @@ class AwsVpcFlowLogDestinations < AwsResourceBase
     end
   "
 
-  attr_reader :table, :connection_error
+  # vpcs: every VPC in the scan regions, as {region:, vpc_id:}, so a caller can
+  # check each one against the flow logs from the same sweep.
+  attr_reader :table, :vpcs, :connection_error
 
   FilterTable.create
     .register_column(:flow_log_ids,         field: :flow_log_id)
@@ -49,7 +51,14 @@ class AwsVpcFlowLogDestinations < AwsResourceBase
     super(opts)
     validate_parameters
     @all_regions = region_scope_or_fail!(@aws, region_override)
+    @vpcs = []
     @table = fetch_data
+  end
+
+  # Regions that could not be read. Their VPCs and flow logs are absent from
+  # the results, so a caller must treat them as unassessed, not compliant.
+  def unreadable_regions
+    region_errors.map { |region, err| "#{region}: #{err}" }
   end
 
   def exists?
@@ -65,6 +74,9 @@ class AwsVpcFlowLogDestinations < AwsResourceBase
   def fetch_data
     rows = []
     each_region_client(::Aws::EC2::Client) do |client, region|
+      paginate_all(args: {}) { |a| client.describe_vpcs(a) }.flat_map { |r| Array(r.vpcs) }.each do |v|
+        @vpcs << { region: region, vpc_id: v.vpc_id }
+      end
       next_token = nil
       loop do
         args = { max_results: 1000 }
